@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import type { CreateIndicadorDTO, CreateLeadDTO, Indicador, Lead, PremioGanho, Premio } from '../types/database';
+import { csvStorage } from './csvStorage';
+import type { CreateIndicadorDTO, CreateLeadDTO, Indicador, Lead, Premio } from '../types/database';
 
 const PREMIOS: Premio[] = [
   { descricao: '10% de Comissão Extra', cor: '#FFD700' },
@@ -14,86 +14,47 @@ const PREMIOS: Premio[] = [
 
 export const api = {
   async criarIndicador(data: CreateIndicadorDTO): Promise<Indicador> {
-    const { data: indicador, error } = await supabase
-      .from('indicadores')
-      .insert([data])
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
+    try {
+      return csvStorage.salvarIndicador(data);
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Erro ao cadastrar indicador');
     }
-
-    return indicador;
   },
 
   async criarLeads(idIndicador: string, leads: CreateLeadDTO[]): Promise<Lead[]> {
-    const leadsComIndicador = leads.map(lead => ({
-      ...lead,
-      id_indicador: idIndicador,
-    }));
-
-    const { data, error } = await supabase
-      .from('leads')
-      .insert(leadsComIndicador)
-      .select();
-
-    if (error) {
-      throw new Error(error.message);
+    try {
+      return csvStorage.salvarLeads(idIndicador, leads);
+    } catch (error) {
+      throw new Error('Erro ao cadastrar leads');
     }
-
-    return data;
   },
 
   async girarRoleta(idIndicador: string): Promise<{ premio: Premio; index: number }> {
     const premioIndex = Math.floor(Math.random() * PREMIOS.length);
     const premio = PREMIOS[premioIndex];
 
-    const { error } = await supabase
-      .from('premios_ganhos')
-      .insert([{
+    try {
+      csvStorage.salvarPremio({
         id_indicador: idIndicador,
         premio_descricao: premio.descricao,
         premio_index: premioIndex,
-      }]);
+      });
 
-    if (error) {
-      throw new Error(error.message);
+      return { premio, index: premioIndex };
+    } catch (error) {
+      throw new Error('Erro ao registrar prêmio');
     }
-
-    return { premio, index: premioIndex };
   },
 
   async buscarIndicador(id: string): Promise<Indicador | null> {
-    const { data, error } = await supabase
-      .from('indicadores')
-      .select()
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return data;
-  },
-
-  async buscarPremio(idIndicador: string): Promise<PremioGanho | null> {
-    const { data, error } = await supabase
-      .from('premios_ganhos')
-      .select()
-      .eq('id_indicador', idIndicador)
-      .order('data_premiacao', { ascending: false })
-      .maybeSingle();
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return data;
+    return csvStorage.buscarIndicador(id);
   },
 
   getPremios(): Premio[] {
     return PREMIOS;
+  },
+
+  exportarDados() {
+    csvStorage.exportarCSV();
   },
 };

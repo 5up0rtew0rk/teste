@@ -3,6 +3,7 @@ import { CadastroIndicador } from './components/CadastroIndicador';
 import { CadastroLeads } from './components/CadastroLeads';
 import { RoletaDaSorte } from './components/RoletaDaSorte';
 import { PopupPremiacao } from './components/PopupPremiacao';
+import { ExportarDados } from './components/ExportarDados';
 import type { Premio } from './types/database';
 
 type Etapa = 'cadastro-indicador' | 'cadastro-leads' | 'roleta';
@@ -19,19 +20,11 @@ function App() {
   const [mostrarPopup, setMostrarPopup] = useState(false);
 
   const handleCadastroIndicador = async (idIndicador: string) => {
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/indicadores?id=eq.${idIndicador}`,
-      {
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-      }
-    );
-    const data = await response.json();
+    const { csvStorage } = await import('./services/csvStorage');
+    const data = csvStorage.buscarIndicador(idIndicador);
 
-    if (data && data.length > 0) {
-      setIndicador({ id: idIndicador, nome: data[0].nome });
+    if (data) {
+      setIndicador({ id: idIndicador, nome: data.nome });
       setEtapa('cadastro-leads');
     }
   };
@@ -78,6 +71,8 @@ function App() {
           onFechar={handleFecharPopup}
         />
       )}
+
+      <ExportarDados />
     </>
   );
 }
