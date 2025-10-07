@@ -3,7 +3,6 @@ export interface Indicador {
   nome: string;
   email: string;
   telefone: string;
-  cpf: string;
   data_cadastro: string;
 }
 
@@ -28,7 +27,6 @@ export interface CreateIndicadorDTO {
   nome: string;
   email: string;
   telefone: string;
-  cpf: string;
 }
 
 export interface CreateLeadDTO {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { UserPlus, Mail, Phone, CreditCard, Sparkles } from 'lucide-react';
-import { api } from '../services/api';
-import { formatarCPF, formatarTelefone, validarCPF, validarEmail } from '../utils/validation';
+import { UserPlus, Mail, Phone } from 'lucide-react';
+import { api } from '../services/apiBackend';
+import { formatarTelefone, validarEmail } from '../utils/validation';
 import type { CreateIndicadorDTO } from '../types/database';
 
 interface CadastroIndicadorProps {
@@ -13,7 +13,6 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
     nome: '',
     email: '',
     telefone: '',
-    cpf: '',
   });
 
   const [erros, setErros] = useState<Partial<Record<keyof CreateIndicadorDTO, string>>>({});
@@ -27,23 +26,19 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
         return !validarEmail(valor) ? 'E-mail inválido' : null;
       case 'telefone':
         return valor.replace(/\D/g, '').length < 10 ? 'Telefone inválido' : null;
-      case 'cpf':
-        return !validarCPF(valor) ? 'CPF inválido' : null;
       default:
         return null;
     }
   };
 
   const handleChange = (campo: keyof CreateIndicadorDTO, valor: string) => {
-    let valorFormatado = valor;
+  let valorFormatado = valor;
 
-    if (campo === 'cpf') {
-      valorFormatado = formatarCPF(valor);
-    } else if (campo === 'telefone') {
-      valorFormatado = formatarTelefone(valor);
-    }
+  if (campo === 'telefone') {
+    valorFormatado = formatarTelefone(valor);
+  }
 
-    setFormData(prev => ({ ...prev, [campo]: valorFormatado }));
+  setFormData(prev => ({ ...prev, [campo]: valorFormatado }));
 
     if (erros[campo]) {
       setErros(prev => ({ ...prev, [campo]: undefined }));
@@ -69,47 +64,47 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
 
     setLoading(true);
     try {
-      const indicador = await api.criarIndicador({
+      const indicador = await api.salvarIndicador({
         ...formData,
-        cpf: formData.cpf.replace(/\D/g, ''),
         telefone: formData.telefone.replace(/\D/g, ''),
       });
       onCadastroCompleto(indicador.id);
     } catch (error) {
-      alert('Erro ao cadastrar indicador. Verifique se o CPF ou e-mail já não estão cadastrados.');
+      const mensagem = error instanceof Error ? error.message : 'Erro ao cadastrar indicador. Verifique se o e-mail já não está cadastrado.';
+      alert(mensagem);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-verde-escuro to-verde-claro flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full mb-4 shadow-lg">
-            <Sparkles className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src="/lampada.png" alt="Lâmpada" className="w-40 h-30 object-contain drop-shadow-lg" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            Torne-se um Indicador de Sucesso
+          <h1 className="text-5xl font-bold text-white mb-3">
+            Quer ganhar prêmios de um jeito simples?
           </h1>
-          <p className="text-lg text-gray-600">
-            Cadastre-se, indique leads e ganhe prêmios exclusivos!
+          <p className="text-lg text-white font-bold">
+            Basta se cadastrar, indicar e garantir sua recompensa!
           </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-grey-700 mb-2">
                 Nome Completo *
               </label>
               <div className="relative">
-                <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-grey-400" />
                 <input
                   type="text"
                   value={formData.nome}
                   onChange={(e) => handleChange('nome', e.target.value)}
-                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-verde-claro focus:border-verde-claro transition-all ${
                     erros.nome ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="Digite seu nome completo"
@@ -119,16 +114,16 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white-700 mb-2">
                 E-mail *
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white-400" />
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange('email', e.target.value)}
-                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-verde-claro focus:border-verde-claro transition-all ${
                     erros.email ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="seu@email.com"
@@ -138,16 +133,16 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white-700 mb-2">
                 Telefone/WhatsApp *
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white-400" />
                 <input
                   type="tel"
                   value={formData.telefone}
                   onChange={(e) => handleChange('telefone', e.target.value)}
-                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-verde-claro focus:border-verde-claro transition-all ${
                     erros.telefone ? 'border-red-500' : 'border-gray-200'
                   }`}
                   placeholder="(00) 00000-0000"
@@ -156,29 +151,12 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
               {erros.telefone && <p className="mt-1 text-sm text-red-600">{erros.telefone}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                CPF *
-              </label>
-              <div className="relative">
-                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={formData.cpf}
-                  onChange={(e) => handleChange('cpf', e.target.value)}
-                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${
-                    erros.cpf ? 'border-red-500' : 'border-gray-200'
-                  }`}
-                  placeholder="000.000.000-00"
-                />
-              </div>
-              {erros.cpf && <p className="mt-1 text-sm text-red-600">{erros.cpf}</p>}
-            </div>
+            {/* CPF removido */}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-verde-escuro to-verde-claro text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? 'Cadastrando...' : 'Cadastrar e Indicar Leads'}
             </button>

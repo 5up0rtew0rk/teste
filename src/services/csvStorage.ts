@@ -20,11 +20,6 @@ export const csvStorage = {
       throw new Error('E-mail já cadastrado');
     }
 
-    const cpfExiste = indicadores.some(i => i.cpf === indicador.cpf);
-    if (cpfExiste) {
-      throw new Error('CPF já cadastrado');
-    }
-
     const novoIndicador: Indicador = {
       ...indicador,
       id: crypto.randomUUID(),
@@ -99,7 +94,7 @@ export const csvStorage = {
     const leads = this.getLeads();
     const premios = this.getPremios();
 
-    const indicadoresCSV = this.converterParaCSV(indicadores, ['id', 'nome', 'email', 'telefone', 'cpf', 'data_cadastro']);
+  const indicadoresCSV = this.converterParaCSV(indicadores, ['id', 'nome', 'email', 'telefone', 'data_cadastro']);
     const leadsCSV = this.converterParaCSV(leads, ['id', 'id_indicador', 'nome', 'email', 'telefone', 'data_cadastro']);
     const premiosCSV = this.converterParaCSV(premios, ['id', 'id_indicador', 'premio_descricao', 'premio_index', 'data_premiacao']);
 

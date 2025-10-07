@@ -3,7 +3,6 @@ import { CadastroIndicador } from './components/CadastroIndicador';
 import { CadastroLeads } from './components/CadastroLeads';
 import { RoletaDaSorte } from './components/RoletaDaSorte';
 import { PopupPremiacao } from './components/PopupPremiacao';
-import { ExportarDados } from './components/ExportarDados';
 import type { Premio } from './types/database';
 
 type Etapa = 'cadastro-indicador' | 'cadastro-leads' | 'roleta';
@@ -20,12 +19,15 @@ function App() {
   const [mostrarPopup, setMostrarPopup] = useState(false);
 
   const handleCadastroIndicador = async (idIndicador: string) => {
-    const { csvStorage } = await import('./services/csvStorage');
-    const data = csvStorage.buscarIndicador(idIndicador);
-
-    if (data) {
-      setIndicador({ id: idIndicador, nome: data.nome });
-      setEtapa('cadastro-leads');
+    const { api } = await import('./services/apiBackend');
+    try {
+      const data = await api.getIndicador(idIndicador);
+      if (data) {
+        setIndicador({ id: idIndicador, nome: data.nome });
+        setEtapa('cadastro-leads');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar indicador:', error);
     }
   };
 
@@ -71,8 +73,6 @@ function App() {
           onFechar={handleFecharPopup}
         />
       )}
-
-      <ExportarDados />
     </>
   );
 }

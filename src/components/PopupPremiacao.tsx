@@ -13,7 +13,7 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiac
       <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative transform animate-scaleIn">
         <button
           onClick={onFechar}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-4 right-4 text-white-400 hover:text-white-600 transition-colors"
           aria-label="Fechar"
         >
           <X className="w-6 h-6" />
@@ -21,22 +21,22 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiac
 
         <div className="text-center">
           <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-yellow-400 rounded-full blur-xl opacity-50 animate-pulse" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+            <div className="absolute inset-0 bg-laranja rounded-full blur-xl opacity-50 animate-pulse" />
+            <div className="relative w-24 h-24 bg-gradient-to-br from-laranja to-verde-claro rounded-full flex items-center justify-center">
               <Trophy className="w-12 h-12 text-white" />
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold text-white-900 mb-2">
             Parabéns, {nomeIndicador}!
           </h2>
 
           <div className="flex items-center justify-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-yellow-500" />
-            <p className="text-lg text-gray-600 font-medium">
+            <Sparkles className="w-5 h-5 text-laranja" />
+            <p className="text-lg text-white-600 font-medium">
               Você ganhou:
             </p>
-            <Sparkles className="w-5 h-5 text-yellow-500" />
+            <Sparkles className="w-5 h-5 text-laranja" />
           </div>
 
           <div
@@ -51,8 +51,8 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiac
             </p>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-6">
-            <p className="text-sm text-gray-700 leading-relaxed">
+          <div className="bg-gradient-to-r from-cinza-custom to-verde-claro/10 rounded-xl p-4 mb-6">
+            <p className="text-sm text-white-700 leading-relaxed">
               Entraremos em contato pelo seu e-mail e WhatsApp para combinar os detalhes do seu prêmio.
               <span className="font-semibold"> Fique de olho nas suas mensagens!</span>
             </p>
@@ -60,7 +60,7 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiac
 
           <button
             onClick={onFechar}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-indigo-700 transform hover:-translate-y-0.5 transition-all"
+            className="w-full bg-gradient-to-r from-verde-escuro to-verde-claro text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all"
           >
             Entendido!
           </button>
