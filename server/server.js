@@ -371,6 +371,7 @@ app.get('/api/download/:tipo', async (req, res) => {
 // ===== INICIAR SERVIDOR =====
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+  console.log(`🚀 Backend rodando em http://localhost:${PORT}`);
+  console.log(`🌐 Frontend disponível em http://localhost:5173`);
   console.log(`📁 Dados salvos em: ${DATA_DIR}`);
 });

@@ -42,6 +42,10 @@ function App() {
 
   const handleFecharPopup = () => {
     setMostrarPopup(false);
+    // Reinicia o jogo para o próximo usuário
+    setPremioRevelado(null);
+    setIndicador(null);
+    setEtapa('cadastro-indicador');
   };
 
   return (

@@ -78,17 +78,25 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-verde-escuro to-verde-claro flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-verde-escuro to-verde-claro flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Marca d'água - fora do padding */}
+      <img 
+        src="/teste.png" 
+        alt="Marca d'água" 
+        className="fixed 0 w-80 h-80 object-contain pointer-events-none z-50"
+        style={{ top: '-104px', right: '30px' }}
+      />
+      
+      <div className="max-w-3xl w-full">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <img src="/lampada.png" alt="Lâmpada" className="w-40 h-30 object-contain drop-shadow-lg" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-3">
-            Quer ganhar prêmios de um jeito simples?
+          <h1 className="text-7xl font-extrabold text-white mb-3">
+            FAÇA INDICAÇÕES E <br />  <span className="text-6xl text-laranja">GANHE PRÊMIOS!</span>
           </h1>
           <p className="text-lg text-white font-bold">
-            Basta se cadastrar, indicar e garantir sua recompensa!
+            COMECE SE CADASTRANDO
           </p>
         </div>
 
@@ -156,9 +164,9 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-verde-escuro to-verde-claro text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-laranja to-laranja text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl hover:from-laranja/90 hover:to-laranja/90 transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? 'Cadastrando...' : 'Cadastrar e Indicar Leads'}
+              {loading ? 'Cadastrando...' : 'Cadastrar-se'}
             </button>
           </form>
         </div>

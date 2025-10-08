@@ -5,14 +5,26 @@ import type { Premio } from '../types/database';
 
 // Prêmios disponíveis
 const PREMIOS: Premio[] = [
-  { descricao: '10% de Comissão Extra', cor: '#FFD700' },
-  { descricao: 'R$ 50 em Vale-Compras', cor: '#FF6B6B' },
-  { descricao: 'Consultoria Grátis', cor: '#4ECDC4' },
-  { descricao: 'Brinde Exclusivo', cor: '#95E1D3' },
-  { descricao: 'R$ 100 em Desconto', cor: '#F38181' },
-  { descricao: 'Kit Premium', cor: '#AA96DA' },
-  { descricao: '15% de Comissão Extra', cor: '#FCBAD3' },
-  { descricao: 'Acesso VIP 3 Meses', cor: '#A8E6CF' },
+  { descricao: 'teste', cor: '#FFD700' },
+  { descricao: 'teste', cor: '#FF6B6B' },
+  { descricao: 'teste', cor: '#4ECDC4' },
+  { descricao: 'teste', cor: '#95E1D3' },
+  { descricao: 'teste', cor: '#F38181' },
+  { descricao: 'teste', cor: '#AA96DA' },
+  { descricao: 'teste', cor: '#FCBAD3' },
+  { descricao: 'teste', cor: '#A8E6CF' },
+];
+
+// Mensagens motivacionais que aparecem durante o jogo
+const MENSAGENS_MOTIVACIONAIS = [
+  "🔥 Quanto mais rápido, melhor o prêmio!",
+  "⚡ Continue esfregando para a sorte grande!",
+  "💪 Não pare! Seu prêmio está chegando!",
+  "🎯 Velocidade é tudo! Acelere!",
+  "✨ Está quase lá! Continue!",
+  "🚀 Mais rápido = Prêmios melhores!",
+  "💎 A sorte favorece os rápidos!",
+  "⭐ Você está arrasando! Continue!"
 ];
 
 interface RoletaDaSorteProps {
@@ -29,12 +41,15 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
   const [mouseNaZona, setMouseNaZona] = useState(false);
   const [tempoRestante, setTempoRestante] = useState<number | null>(null);
   const [tempoExpirado, setTempoExpirado] = useState(false);
+  const [parando, setParando] = useState(false);
+  const [mensagemAtual, setMensagemAtual] = useState<string>('');
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const animationFrameRef = useRef<number>();
   const timerRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
+  const mensagemIntervalRef = useRef<number | null>(null);
 
-  const TEMPO_LIMITE = 5; // 5 segundos
+  const TEMPO_LIMITE = 10; // 10 segundos
 
   useEffect(() => {
     const sortearPremio = async () => {
@@ -64,21 +79,27 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
     const animar = () => {
       setRotacao(prev => prev + velocidade);
 
-      if (velocidade > 0) {
+      // Se está parando, não reduz mais a velocidade naturalmente
+      if (!parando && velocidade > 0) {
         setVelocidade(prev => Math.max(0, prev * 0.985));
       }
 
-      // Quando a velocidade está muito baixa e não tem mais mouse na zona, finaliza
-      if (velocidade < 0.1 && !mouseNaZona && premioSorteado) {
+      // Quando o tempo expirou ou mouse saiu, inicia processo de parada
+      if ((tempoExpirado || (!mouseNaZona && velocidade < 5)) && !parando && premioSorteado) {
+        setParando(true);
         setVelocidade(0);
         setGirando(false);
+        
+        // Cancela a animação atual
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
         
         // Calcula a posição final correta
         const grausPorSegmento = 360 / PREMIOS.length;
         const rotacaoAtual = rotacao % 360;
         
         // Ajuste para alinhar com o ponteiro (que está no topo)
-        // O prêmio deve estar centralizado no topo quando parar
         const anguloAlvo = premioSorteado.index * grausPorSegmento + (grausPorSegmento / 2);
         
         // Calcula quantos graus faltam para chegar no prêmio correto
@@ -127,10 +148,10 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [girando, velocidade, mouseNaZona, premioSorteado, rotacao, onPremioRevelado]);
+  }, [girando, velocidade, mouseNaZona, premioSorteado, rotacao, onPremioRevelado, tempoExpirado, parando]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!mouseNaZona || !premioSorteado || tempoExpirado) return;
+    if (!mouseNaZona || !premioSorteado || tempoExpirado || parando) return;
 
     const deltaX = e.clientX - lastMousePosRef.current.x;
     const deltaY = e.clientY - lastMousePosRef.current.y;
@@ -148,8 +169,18 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
     setMouseNaZona(true);
     lastMousePosRef.current = { x: e.clientX, y: e.clientY };
     
-    // Inicia o timer de 5 segundos
+    // Inicia o timer de 10 segundos
     setTempoRestante(TEMPO_LIMITE);
+    
+    // Define a primeira mensagem
+    setMensagemAtual(MENSAGENS_MOTIVACIONAIS[0]);
+    
+    // Alterna as mensagens a cada 2 segundos
+    let mensagemIndex = 0;
+    mensagemIntervalRef.current = setInterval(() => {
+      mensagemIndex = (mensagemIndex + 1) % MENSAGENS_MOTIVACIONAIS.length;
+      setMensagemAtual(MENSAGENS_MOTIVACIONAIS[mensagemIndex]);
+    }, 2000);
     
     // Atualiza o contador a cada segundo
     intervalRef.current = setInterval(() => {
@@ -162,12 +193,14 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
       });
     }, 1000);
     
-    // Timer para expirar após 5 segundos
+    // Timer para expirar após 10 segundos
     timerRef.current = setTimeout(() => {
       setTempoExpirado(true);
       setMouseNaZona(false);
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (mensagemIntervalRef.current) clearInterval(mensagemIntervalRef.current);
       setTempoRestante(null);
+      setMensagemAtual('');
     }, TEMPO_LIMITE * 1000);
   };
 
@@ -183,7 +216,12 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    if (mensagemIntervalRef.current) {
+      clearInterval(mensagemIntervalRef.current);
+      mensagemIntervalRef.current = null;
+    }
     setTempoRestante(null);
+    setMensagemAtual('');
   };
 
   // Cleanup dos timers quando o componente desmontar
@@ -191,14 +229,15 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (mensagemIntervalRef.current) clearInterval(mensagemIntervalRef.current);
     };
   }, []);
 
   const grausPorSegmento = 360 / PREMIOS.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-verde-escuro via-verde-escuro/90 to-verde-escuro/80 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-[#003c30] to-[#04d38a] flex items-center justify-center p-4">
+      <div className="max-w-6xl w-full">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white mb-3 flex items-center justify-center gap-3">
             <Sparkles className="w-12 h-12 text-laranja" />
@@ -209,40 +248,53 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-12 mb-8">
+        <div className="flex items-center justify-center gap-16 mb-8">
           {/* Zona de Ativação - Esquerda */}
           <div
             onMouseMove={handleMouseMove}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="text-center cursor-pointer flex-shrink-0"
+            className="text-center cursor-pointer flex-shrink-0 p-8 rounded-3xl transition-all"
+            style={{
+              minWidth: '500px',
+              minHeight: '600px',
+              backgroundColor: mouseNaZona ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+              border: mouseNaZona ? '3px dashed #FFD700' : '3px dashed rgba(255, 255, 255, 0.3)'
+            }}
           >
             <img 
               src="/lampada.png" 
               alt="Lâmpada" 
-              className={`w-40 h-40 mx-auto mb-4 transition-transform ${mouseNaZona ? 'animate-bounce scale-110' : 'scale-100'}`}
+              className={`w-[350px] h-[350px] mx-auto mb-6 transition-transform ${mouseNaZona ? 'animate-bounce scale-110' : 'scale-100'}`}
             />
-            <p className="text-2xl font-bold text-white mb-2">
+            <p className="text-3xl font-bold text-white mb-3">
               Zona de Ativação
             </p>
             {tempoRestante !== null && !tempoExpirado && (
-              <p className="text-laranja font-bold text-3xl mb-2 animate-pulse">
-                {tempoRestante}s
-              </p>
+              <>
+                <p className="text-laranja font-bold text-6xl mb-4 animate-pulse">
+                  {tempoRestante}s
+                </p>
+                {mensagemAtual && (
+                  <p className="text-yellow-300 font-bold text-2xl mb-2 animate-pulse">
+                    {mensagemAtual}
+                  </p>
+                )}
+              </>
             )}
             {tempoExpirado ? (
-              <p className="text-red-400 font-medium text-lg">
+              <p className="text-red-400 font-medium text-2xl">
                 Tempo esgotado! Aguarde o resultado...
               </p>
-            ) : (
-              <p className="text-white font-medium text-lg">
-                {mouseNaZona ? 'Mova o mouse para girar!' : 'Passe o mouse aqui para girar!'}
+            ) : !mouseNaZona ? (
+              <p className="text-white font-medium text-2xl">
+                Passe o mouse aqui e esfregue por 10 segundos!
               </p>
-            )}
+            ) : null}
           </div>
 
           {/* Roleta - Direita */}
-          <div className="relative w-96 h-96 flex-shrink-0">
+          <div className="relative w-[650px] h-[650px] flex-shrink-0">
             <svg
               className="w-full h-full transition-transform duration-200 ease-out"
               style={{ transform: `rotate(${rotacao}deg)` }}
@@ -273,24 +325,24 @@ export function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: 
                       x={textX}
                       y={textY}
                       fill="white"
-                      fontSize="12"
+                      fontSize="16"
                       fontWeight="bold"
                       textAnchor="middle"
                       transform={`rotate(${midAngle + 90}, ${textX}, ${textY})`}
                       style={{ pointerEvents: 'none' }}
                     >
                       <tspan x={textX} dy="0">{premio.descricao.split(' ')[0]}</tspan>
-                      <tspan x={textX} dy="14">{premio.descricao.split(' ').slice(1).join(' ')}</tspan>
+                      <tspan x={textX} dy="18">{premio.descricao.split(' ').slice(1).join(' ')}</tspan>
                     </text>
                   </g>
                 );
               })}
-              <circle cx="200" cy="200" r="40" fill="white" />
-              <circle cx="200" cy="200" r="35" fill="#4F46E5" />
+              <circle cx="200" cy="200" r="50" fill="white" />
+              <circle cx="200" cy="200" r="45" fill="#4F46E5" />
             </svg>
 
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2">
-              <div className="w-0 h-0 border-l-[20px] border-r-[20px] border-t-[40px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3">
+              <div className="w-0 h-0 border-l-[30px] border-r-[30px] border-t-[60px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
             </div>
           </div>
         </div>

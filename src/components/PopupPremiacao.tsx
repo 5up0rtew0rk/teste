@@ -53,7 +53,7 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiac
 
           <div className="bg-gradient-to-r from-cinza-custom to-verde-claro/10 rounded-xl p-4 mb-6">
             <p className="text-sm text-white-700 leading-relaxed">
-              Entraremos em contato pelo seu e-mail e WhatsApp para combinar os detalhes do seu prêmio.
+              Mostre ao apresentador esse prêmio pa.
               <span className="font-semibold"> Fique de olho nas suas mensagens!</span>
             </p>
           </div>

@@ -204,6 +204,13 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#003c30] to-[#04d38a] flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+      {/* Marca d'água - fora do padding */}
+      <img 
+        src="/teste.png" 
+        alt="Marca d'água" 
+        className="fixed 0 w-80 h-80 object-contain pointer-events-none z-50"
+        style={{ top: '-104px', right: '30px' }}
+      />
       {/* Elementos decorativos de fundo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 bg-emerald-400/10 rounded-full blur-xl animate-pulse"></div>
@@ -211,47 +218,42 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
         <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-emerald-300/10 rounded-full blur-lg animate-bounce"></div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto z-10">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
+      <div className="w-full max-w-[120rem] mx-auto z-10">
+        <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 lg:gap-8 items-center">
           
           {/* Lado Esquerdo: Título e Lâmpada */}
-          <div className="text-white text-center lg:text-left order-2 lg:order-1">
-            <div className="inline-flex items-center gap-2 bg-emerald-400/20 px-4 py-2 rounded-full mb-6 backdrop-blur-sm border border-emerald-400/30">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
-              <span className="text-emerald-400 font-semibold text-sm">Gêni.al</span>
-            </div>
-            
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold uppercase leading-tight drop-shadow-lg mb-4">
-              Liberte a <span className="text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]">Gên.ia</span> da Lâmpada e{' '}
-              <span className="text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]">Ganhe Prêmios</span>
-            </h1>
-            
-            <p className="text-base md:text-lg text-gray-300 mb-6 max-w-2xl mx-auto lg:mx-0">
-              Indique 3 contatos e participe do sorteio!
-            </p>
-            
-            {/* Imagem da Lâmpada */}
-            <div className="mt-6 flex justify-center lg:justify-start relative">
+            <div className="text-white text-center flex flex-col items-center justify-center order-2 lg:order-1">
+              {/* Imagem da Lâmpada */}
+              <div className="mt-6 flex justify-center relative">
               <img 
-              src="/lampada.png" 
-              alt="Lâmpada Mágica" 
-              className="w-64 md:w-80 lg:w-[30rem] h-auto object-contain drop-shadow-[0_10px_30px_rgba(250,204,21,0.4)] hover:scale-105 transition-transform duration-300" 
+                src="/lampada.png" 
+                alt="Lâmpada Mágica" 
+                className="w-64 md:w-80 lg:w-[35rem] h-auto object-contain drop-shadow-[0_10px_30px_rgba(250,204,21,0.4)] hover:scale-105 transition-transform duration-300 mb-6" 
               />
+              </div>
+
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-extrabold uppercase leading-tight drop-shadow-lg mb-4 text-center">
+              LIBERTE A <span className="text-laranja">GÊNI.IA</span>
+              <span className="block text-2xl md:text-3xl lg:text-6xl mt-[-0.1em]">DA LÂMPADA MÁGICA</span>
+            </h1>
+
+            <p className="text-3xl md:text-5xl lg:text-2xl font-extrabold uppercase leading-tight drop-shadow-lg mb-4 text-center">INDIQUE <span className="text-laranja">3 PESSOAS</span> QUE PODEM SE <br />BENEFICIAR COM O WORKMONITOR!</p>
+
+
             </div>
-          </div>
 
           {/* Lado Direito: Formulário */}
-          <div className="order-1 lg:order-2 relative">
+            <div className="order-1 lg:order-2 relative lg:pl-0 lg:ml-[-15rem] flex justify-center items-center">
             {/* Setas de Navegação - Fora do Card */}
             {/* Seta para voltar */}
             {leadAtual > 0 && (
               <button
-                type="button"
-                onClick={voltarLeadAnterior}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-30 bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
-                title="Clique para voltar ao contato anterior"
+              type="button"
+              onClick={voltarLeadAnterior}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-30 bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+              title="Clique para voltar ao contato anterior"
               >
-                <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-6 h-6" />
               </button>
             )}
 
@@ -274,24 +276,24 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
               </div>
             )}
 
-            <div className="bg-black/90 backdrop-blur-sm border border-emerald-400/30 rounded-xl shadow-2xl p-4 w-full relative overflow-hidden max-w-sm mx-auto">
+            <div className="bg-black/90 backdrop-blur-sm border border-emerald-400/30 rounded-xl shadow-2xl p-6 md:p-8 w-full relative overflow-hidden max-w-lg mx-auto">
               {/* Fundo decorativo do formulário */}
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none"></div>
               
               {/* Header do formulário */}
-              <div className="relative z-10 mb-3 text-center">
-                <h2 className="text-lg font-bold text-white mb-1">Cadastre seus Contatos</h2>
-                <p className="text-gray-400 text-xs">Preencha um por vez</p>
+              <div className="relative z-10 mb-4 text-center">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Cadastre seus Contatos</h2>
+                <p className="text-gray-400 text-sm">Preencha um por vez</p>
               </div>
 
               {/* Mensagem de sucesso */}
               {isSuccess && (
-                <div className="mb-2 p-2 bg-emerald-500/20 border border-emerald-400/50 rounded">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <div className="mb-3 p-3 bg-emerald-500/20 border border-emerald-400/50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                     <div>
-                      <h3 className="text-emerald-400 font-semibold text-xs">Sucesso!</h3>
-                      <p className="text-emerald-300 text-xs">{successMessage}</p>
+                      <h3 className="text-emerald-400 font-semibold text-sm">Sucesso!</h3>
+                      <p className="text-emerald-300 text-sm">{successMessage}</p>
                     </div>
                   </div>
                 </div>
@@ -299,12 +301,12 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
               {/* Mensagem de erro geral */}
               {status === 'error' && hasErrors && (
-                <div className="mb-2 p-2 bg-red-500/20 border border-red-400/50 rounded">
-                  <div className="flex items-center gap-1.5">
-                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                <div className="mb-3 p-3 bg-red-500/20 border border-red-400/50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                     <div>
-                      <h3 className="text-red-400 font-semibold text-xs">Atenção!</h3>
-                      <p className="text-red-300 text-xs">Corrija os campos destacados.</p>
+                      <h3 className="text-red-400 font-semibold text-sm">Atenção!</h3>
+                      <p className="text-red-300 text-sm">Corrija os campos destacados.</p>
                     </div>
                   </div>
                 </div>
@@ -312,12 +314,12 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="relative z-10">
                 {/* Indicador de progresso */}
-                <div className="flex justify-center mb-4">
-                  <div className="flex gap-2">
+                <div className="flex justify-center mb-5">
+                  <div className="flex gap-3">
                     {[0, 1, 2].map((index) => (
                       <div
                         key={index}
-                        className={`w-8 h-2 rounded-full transition-all duration-300 ${
+                        className={`w-12 h-2.5 rounded-full transition-all duration-300 ${
                           index === leadAtual
                             ? 'bg-emerald-400'
                             : leadsCompletos[index]
@@ -337,52 +339,52 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
                   >
                     {indicacoes.map((indicacao, index) => (
                       <div key={index} className="w-full flex-shrink-0">
-                        <div className="p-3 bg-gray-900/30 rounded border border-gray-700/30 hover:border-emerald-400/30 transition-colors">
+                        <div className="p-4 md:p-5 bg-gray-900/30 rounded-lg border border-gray-700/30 hover:border-emerald-400/30 transition-colors">
                           {/* Header do lead atual */}
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                                 leadsCompletos[index] ? 'bg-emerald-400/30' : 'bg-emerald-400/20'
                               }`}>
                                 {leadsCompletos[index] ? (
-                                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                  <CheckCircle className="w-5 h-5 text-emerald-400" />
                                 ) : (
-                                  <span className="text-emerald-400 font-bold text-xs">{index + 1}</span>
+                                  <span className="text-emerald-400 font-bold text-sm">{index + 1}</span>
                                 )}
                               </div>
-                              <h3 className="font-semibold text-white text-sm">
+                              <h3 className="font-semibold text-white text-base">
                                 {index === 0 ? '1ª Indicação' : index === 1 ? '2ª Indicação' : '3ª Indicação'}
                               </h3>
                             </div>
-                            <span className="text-xs text-gray-400">{index + 1}/3</span>
+                            <span className="text-sm text-gray-400">{index + 1}/3</span>
                           </div>
                           
-                          <div className="space-y-3">
+                          <div className="space-y-4">
                             {/* Campo Nome Completo */}
                             <div>
-                              <label htmlFor={`nome-${index}`} className="block text-xs font-medium text-gray-300 mb-1">
+                              <label htmlFor={`nome-${index}`} className="block text-sm font-medium text-gray-300 mb-1.5">
                                 Nome Completo *
                               </label>
                               <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                   type="text"
                                   id={`nome-${index}`}
                                   value={indicacao.nome}
                                   onChange={(e) => handleChange(index, 'nome', e.target.value)}
-                                  className={`w-full bg-gray-800/50 text-white border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 transition-all placeholder:text-gray-500 ${
+                                  className={`w-full bg-gray-800/50 text-white border rounded-lg pl-11 pr-11 py-3 text-base focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 transition-all placeholder:text-gray-500 ${
                                     erros[index]?.nome ? 'border-red-500 bg-red-500/10' : 'border-gray-600 hover:border-gray-500'
                                   }`}
                                   placeholder="Digite o nome completo"
                                   disabled={isLoading}
                                 />
                                 {indicacao.nome && !erros[index]?.nome && (
-                                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400" />
+                                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400" />
                                 )}
                               </div>
                               {erros[index]?.nome && (
-                                <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-                                  <AlertCircle className="w-3 h-3" />
+                                <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1">
+                                  <AlertCircle className="w-4 h-4" />
                                   {erros[index]?.nome}
                                 </p>
                               )}
@@ -390,29 +392,29 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
                             
                             {/* Campo Telefone */}
                             <div>
-                              <label htmlFor={`telefone-${index}`} className="block text-xs font-medium text-gray-300 mb-1">
+                              <label htmlFor={`telefone-${index}`} className="block text-sm font-medium text-gray-300 mb-1.5">
                                 Telefone *
                               </label>
                               <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                   type="tel"
                                   id={`telefone-${index}`}
                                   value={indicacao.telefone}
                                   onChange={(e) => handleChange(index, 'telefone', e.target.value)}
-                                  className={`w-full bg-gray-800/50 text-white border rounded-lg pl-10 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 transition-all placeholder:text-gray-500 ${
+                                  className={`w-full bg-gray-800/50 text-white border rounded-lg pl-11 pr-11 py-3 text-base focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400 transition-all placeholder:text-gray-500 ${
                                     erros[index]?.telefone ? 'border-red-500 bg-red-500/10' : 'border-gray-600 hover:border-gray-500'
                                   }`}
                                   placeholder="(11) 99999-9999"
                                   disabled={isLoading}
                                 />
                                 {indicacao.telefone && !erros[index]?.telefone && (
-                                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400" />
+                                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400" />
                                 )}
                               </div>
                               {erros[index]?.telefone && (
-                                <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-                                  <AlertCircle className="w-3 h-3" />
+                                <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1">
+                                  <AlertCircle className="w-4 h-4" />
                                   {erros[index]?.telefone}
                                 </p>
                               )}
@@ -426,11 +428,11 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
                 {/* Botão de Finalizar (apenas no último lead) */}
                 {leadAtual === 2 && (
-                  <div className="mt-4">
+                  <div className="mt-5">
                     <button
                       type="submit"
                       disabled={isLoading || !leadsCompletos.every(Boolean)}
-                      className={`w-full py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 text-sm font-medium ${
+                      className={`w-full py-4 px-6 rounded-lg transition-all flex items-center justify-center gap-2.5 text-base font-semibold ${
                         isLoading
                           ? 'bg-gray-600 text-gray-300 cursor-wait'
                           : isSuccess
@@ -442,17 +444,17 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
                     >
                       {isLoading ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
                           {status === 'validating' ? 'Validando...' : 'Enviando...'}
                         </>
                       ) : isSuccess ? (
                         <>
-                          <CheckCircle className="w-4 h-4" />
+                          <CheckCircle className="w-5 h-5" />
                           Enviado com Sucesso!
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4" />
+                          <Send className="w-5 h-5" />
                           Participar do Sorteio
                         </>
                       )}
@@ -462,24 +464,24 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
                 {/* Dica de preenchimento */}
                 {!leadsCompletos[leadAtual] && leadAtual < 2 && (
-                  <p className="mt-2 text-xs text-gray-400 text-center">
+                  <p className="mt-3 text-sm text-gray-400 text-center">
                     Complete os campos para continuar
                   </p>
                 )}
 
                 {/* Dica de navegação */}
                 {leadsCompletos[leadAtual] && leadAtual < 2 && (
-                  <p className="mt-2 text-xs text-emerald-400 text-center flex items-center justify-center gap-1">
+                  <p className="mt-3 text-sm text-emerald-400 text-center flex items-center justify-center gap-1.5">
                     <span>Use as setas</span>
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-4 h-4" />
                     <span>ou clique na seta para continuar</span>
                   </p>
                 )}
 
                 {/* Resumo dos leads completos */}
                 {leadAtual === 2 && leadsCompletos.filter(Boolean).length > 0 && (
-                  <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-400/30 rounded text-center">
-                    <p className="text-xs text-emerald-400">
+                  <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-400/30 rounded-lg text-center">
+                    <p className="text-sm text-emerald-400">
                       {leadsCompletos.filter(Boolean).length}/3 contatos preenchidos
                     </p>
                   </div>
