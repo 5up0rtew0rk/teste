@@ -203,7 +203,7 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
   }, [leadAtual, leadsCompletos, avancarProximoLead, voltarLeadAnterior]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#003c30] to-[#04d38a] flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#002f25] to-[#003d32] flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
       {/* Marca d'água - fora do padding */}
       <img 
         src="/teste.png" 
@@ -232,10 +232,18 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
               />
               </div>
 
-            <h1 className="text-3xl md:text-5xl lg:text-7xl font-extrabold uppercase leading-tight drop-shadow-lg mb-4 text-center">
-              LIBERTE A <span className="text-laranja">GÊNI.IA</span>
-              <span className="block text-2xl md:text-3xl lg:text-6xl mt-[-0.1em]">DA LÂMPADA MÁGICA</span>
-            </h1>
+<h1 className="font-extrabold uppercase text-center leading-none mb-6">
+  <span className="block text-[clamp(2rem,6vw,5rem)] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+    LIBERTE A{' '}
+    <span className="text-laranja relative">
+      GÊNI<span className="text-white">.</span>IA
+    </span>
+  </span>
+  <span className="block text-[clamp(1.5rem,5vw,4rem)] mt-2 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+    DA LÂMPADA MÁGICA
+  </span>
+</h1>
+
 
             <p className="text-3xl md:text-5xl lg:text-2xl font-extrabold uppercase leading-tight drop-shadow-lg mb-4 text-center">INDIQUE <span className="text-laranja">3 PESSOAS</span> QUE PODEM SE <br />BENEFICIAR COM O WORKMONITOR!</p>
 

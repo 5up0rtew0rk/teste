@@ -1,13 +1,14 @@
-import { Trophy, X, Sparkles } from 'lucide-react';
+import { Trophy, X, Sparkles, RotateCcw } from 'lucide-react';
 import type { Premio } from '../types/database';
 
 interface PopupPremiacaoProps {
   nomeIndicador: string;
   premio: Premio;
   onFechar: () => void;
+  onTentarNovamente?: () => void;
 }
 
-export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiacaoProps) {
+export function PopupPremiacao({ nomeIndicador, premio, onFechar, onTentarNovamente }: PopupPremiacaoProps) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
       <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 relative transform animate-scaleIn">
@@ -53,17 +54,37 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiac
 
           <div className="bg-gradient-to-r from-cinza-custom to-verde-claro/10 rounded-xl p-4 mb-6">
             <p className="text-sm text-white-700 leading-relaxed">
-              Mostre ao apresentador esse prêmio pa.
-              <span className="font-semibold"> Fique de olho nas suas mensagens!</span>
+              {onTentarNovamente ? (
+                <>
+                  🎯 <span className="font-semibold">Modo Desenvolvimento:</span> Clique em "Tentar Novamente" para testar a roleta novamente ou "Entendido" para finalizar.
+                </>
+              ) : (
+                <>
+                  Mostre ao apresentador esse prêmio.
+                  <span className="font-semibold"> Fique de olho nas suas mensagens!</span>
+                </>
+              )}
             </p>
           </div>
 
-          <button
-            onClick={onFechar}
-            className="w-full bg-gradient-to-r from-verde-escuro to-verde-claro text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all"
-          >
-            Entendido!
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={onFechar}
+              className="flex-1 bg-gradient-to-r from-verde-escuro to-verde-claro text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all"
+            >
+              Entendido!
+            </button>
+            
+            {onTentarNovamente && (
+              <button
+                onClick={onTentarNovamente}
+                className="flex-1 bg-gradient-to-r from-laranja to-yellow-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-laranja/90 hover:to-yellow-500/90 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Tentar Novamente
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

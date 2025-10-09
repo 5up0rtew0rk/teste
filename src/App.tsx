@@ -3,6 +3,7 @@ import { CadastroIndicador } from './components/CadastroIndicador';
 import { CadastroLeads } from './components/CadastroLeads';
 import { RoletaDaSorte } from './components/RoletaDaSorte';
 import { PopupPremiacao } from './components/PopupPremiacao';
+import { DevNavigation } from './components/DevNavigation';
 import type { Premio } from './types/database';
 
 type Etapa = 'cadastro-indicador' | 'cadastro-leads' | 'roleta';
@@ -17,6 +18,7 @@ function App() {
   const [indicador, setIndicador] = useState<DadosIndicador | null>(null);
   const [premioRevelado, setPremioRevelado] = useState<Premio | null>(null);
   const [mostrarPopup, setMostrarPopup] = useState(false);
+  const [roletaKey, setRoletaKey] = useState(0); // Key para forçar remontagem da roleta
 
   const handleCadastroIndicador = async (idIndicador: string) => {
     const { api } = await import('./services/apiBackend');
@@ -48,8 +50,36 @@ function App() {
     setEtapa('cadastro-indicador');
   };
 
+  const handleTentarNovamente = () => {
+    setMostrarPopup(false);
+    setPremioRevelado(null);
+    // Incrementa a key para forçar remontagem completa da roleta
+    setRoletaKey(prev => prev + 1);
+    // Volta para a roleta sem resetar o indicador
+    setEtapa('roleta');
+  };
+
+  // Funções para DevNavigation
+  const handleDevChangeEtapa = (novaEtapa: Etapa) => {
+    setMostrarPopup(false);
+    setPremioRevelado(null);
+    setEtapa(novaEtapa);
+  };
+
+  const handleSetIndicadorTeste = () => {
+    setIndicador({ id: 'Dev123', nome: 'Desenvolvedor Teste' });
+  };
+
   return (
     <>
+      {/* Navegação de Desenvolvimento */}
+      <DevNavigation
+        etapaAtual={etapa}
+        onChangeEtapa={handleDevChangeEtapa}
+        onSetIndicadorTeste={handleSetIndicadorTeste}
+        indicador={indicador}
+      />
+
       {etapa === 'cadastro-indicador' && (
         <CadastroIndicador onCadastroCompleto={handleCadastroIndicador} />
       )}
@@ -64,6 +94,7 @@ function App() {
 
       {etapa === 'roleta' && indicador && (
         <RoletaDaSorte
+          key={roletaKey}
           idIndicador={indicador.id}
           nomeIndicador={indicador.nome}
           onPremioRevelado={handlePremioRevelado}
@@ -75,6 +106,7 @@ function App() {
           nomeIndicador={indicador.nome}
           premio={premioRevelado}
           onFechar={handleFecharPopup}
+          onTentarNovamente={handleTentarNovamente}
         />
       )}
     </>

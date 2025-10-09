@@ -78,7 +78,7 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-verde-escuro to-verde-claro flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#002f25] to-[#003d32] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Marca d'água - fora do padding */}
       <img 
         src="/teste.png" 
