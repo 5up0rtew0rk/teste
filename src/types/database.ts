@@ -15,14 +15,6 @@ export interface Lead {
   data_cadastro: string;
 }
 
-export interface PremioGanho {
-  id: string;
-  id_indicador: string;
-  premio_descricao: string;
-  premio_index: number;
-  data_premiacao: string;
-}
-
 export interface CreateIndicadorDTO {
   nome: string;
   email: string;

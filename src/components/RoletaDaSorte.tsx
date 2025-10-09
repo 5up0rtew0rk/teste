@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { Sparkles } from 'lucide-react';
-import { api } from '../services/apiBackend';
 import type { Premio } from '../types/database';
 import { useImagePreloader } from './ImagePreloader';
 
@@ -96,17 +95,6 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     
     console.log('🎲 Prêmio sorteado:', premio.descricao, 'Index:', premioIndex);
     
-    // Salva no backend
-    try {
-      await api.salvarPremio({
-        id_indicador: idIndicador,
-        premio_descricao: premio.descricao,
-        premio_index: premioIndex,
-      });
-    } catch (error) {
-      console.error('Erro ao salvar prêmio:', error);
-    }
-
     setPremioSorteado({ premio, index: premioIndex });
   }, [idIndicador, premiosMemoized]);
 

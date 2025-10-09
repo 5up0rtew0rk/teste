@@ -24,7 +24,6 @@ await fs.mkdir(DATA_DIR, { recursive: true });
 const FILES = {
   INDICADORES: path.join(DATA_DIR, 'indicadores.csv'),
   LEADS: path.join(DATA_DIR, 'leads.csv'),
-  PREMIOS: path.join(DATA_DIR, 'premios.csv'),
 };
 
 // Função auxiliar para ler CSV
@@ -231,79 +230,6 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
-// ===== PRÊMIOS =====
-
-// Listar todos os prêmios
-app.get('/api/premios', async (req, res) => {
-  try {
-    const premios = await readCSV(FILES.PREMIOS);
-    res.json(premios);
-  } catch (error) {
-    console.error('Erro ao ler prêmios:', error);
-    res.status(500).json({ error: 'Erro ao ler prêmios' });
-  }
-});
-
-// Buscar prêmio de um indicador
-app.get('/api/premios/indicador/:idIndicador', async (req, res) => {
-  try {
-    const { idIndicador } = req.params;
-    const premios = await readCSV(FILES.PREMIOS);
-    const premiosDoIndicador = premios.filter(p => p.id_indicador === idIndicador);
-    
-    if (premiosDoIndicador.length === 0) {
-      return res.status(404).json({ error: 'Nenhum prêmio encontrado' });
-    }
-    
-    const premioMaisRecente = premiosDoIndicador.sort((a, b) =>
-      new Date(b.data_premiacao).getTime() - new Date(a.data_premiacao).getTime()
-    )[0];
-    
-    res.json(premioMaisRecente);
-  } catch (error) {
-    console.error('Erro ao ler prêmios do indicador:', error);
-    res.status(500).json({ error: 'Erro ao ler prêmios' });
-  }
-});
-
-// Registrar prêmio
-app.post('/api/premios', async (req, res) => {
-  try {
-    const { id_indicador, premio_descricao, premio_index } = req.body;
-    
-    if (!id_indicador || !premio_descricao || premio_index === undefined) {
-      return res.status(400).json({ error: 'Dados inválidos' });
-    }
-    
-    // Verifica se o indicador existe
-    const indicadores = await readCSV(FILES.INDICADORES);
-    if (!indicadores.some(i => i.id === id_indicador)) {
-      return res.status(404).json({ error: 'Indicador não encontrado' });
-    }
-    
-    const premios = await readCSV(FILES.PREMIOS);
-    
-    const novoPremio = {
-      id: generateId(),
-      id_indicador,
-      premio_descricao,
-      premio_index: premio_index.toString(),
-      data_premiacao: new Date().toISOString(),
-    };
-    
-    premios.push(novoPremio);
-    
-    await writeCSV(FILES.PREMIOS, premios, [
-      'id', 'id_indicador', 'premio_descricao', 'premio_index', 'data_premiacao'
-    ]);
-    
-    res.status(201).json(novoPremio);
-  } catch (error) {
-    console.error('Erro ao criar prêmio:', error);
-    res.status(500).json({ error: 'Erro ao criar prêmio' });
-  }
-});
-
 // ===== EXPORTAR =====
 
 // Exportar todos os dados
@@ -311,16 +237,13 @@ app.get('/api/exportar', async (req, res) => {
   try {
     const indicadores = await readCSV(FILES.INDICADORES);
     const leads = await readCSV(FILES.LEADS);
-    const premios = await readCSV(FILES.PREMIOS);
     
     res.json({
       indicadores,
       leads,
-      premios,
       total: {
         indicadores: indicadores.length,
         leads: leads.length,
-        premios: premios.length,
       }
     });
   } catch (error) {
@@ -345,10 +268,6 @@ app.get('/api/download/:tipo', async (req, res) => {
       case 'leads':
         filePath = FILES.LEADS;
         filename = 'leads.csv';
-        break;
-      case 'premios':
-        filePath = FILES.PREMIOS;
-        filename = 'premios.csv';
         break;
       default:
         return res.status(400).json({ error: 'Tipo inválido' });

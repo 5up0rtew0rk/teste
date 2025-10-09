@@ -1,4 +1,4 @@
-import type { Indicador, Lead, PremioGanho, CreateIndicadorDTO, CreateLeadDTO } from '../types/database';
+import type { Indicador, Lead, CreateIndicadorDTO, CreateLeadDTO } from '../types/database';
 
 const API_URL = 'http://localhost:3001/api';
 
@@ -55,41 +55,15 @@ export const api = {
     });
   },
 
-  // ===== PRÊMIOS =====
-
-  async getPremios(): Promise<PremioGanho[]> {
-    return fetchAPI<PremioGanho[]>('/premios');
-  },
-
-  async getPremioByIndicador(idIndicador: string): Promise<PremioGanho | null> {
-    try {
-      return await fetchAPI<PremioGanho>(`/premios/indicador/${idIndicador}`);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('404')) {
-        return null;
-      }
-      throw error;
-    }
-  },
-
-  async salvarPremio(data: Omit<PremioGanho, 'id' | 'data_premiacao'>): Promise<PremioGanho> {
-    return fetchAPI<PremioGanho>('/premios', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
   // ===== EXPORTAR =====
 
   async exportarDados() {
     const response = await fetchAPI<{
       indicadores: Indicador[];
       leads: Lead[];
-      premios: PremioGanho[];
       total: {
         indicadores: number;
         leads: number;
-        premios: number;
       };
     }>('/exportar');
 
@@ -97,7 +71,7 @@ export const api = {
   },
 
   // Download de CSV individual
-  downloadCSV(tipo: 'indicadores' | 'leads' | 'premios') {
+  downloadCSV(tipo: 'indicadores' | 'leads') {
     window.open(`${API_URL}/download/${tipo}`, '_blank');
   },
 
