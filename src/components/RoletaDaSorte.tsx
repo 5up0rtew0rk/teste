@@ -15,27 +15,6 @@ const PREMIOS: Premio[] = [
   { descricao: 'teste8', cor: '#A8E6CF' },
 ];
 
-// Mensagens motivacionais que aparecem durante o jogo
-const MENSAGENS_MOTIVACIONAIS = [
-  "🔥 Quanto mais rápido, melhor o prêmio!",
-  "⚡ Continue esfregando para a sorte grande!",
-  "💪 Não pare! Seu prêmio está chegando!",
-  "🎯 Velocidade é tudo! Acelere!",
-  "✨ Está quase lá! Continue!",
-  "🚀 Mais rápido = Prêmios melhores!",
-  "💎 A sorte favorece os rápidos!",
-  "⭐ Você está arrasando! Continue!"
-];
-
-// Mensagens quando está perdendo velocidade
-const MENSAGENS_PERDENDO_VELOCIDADE = [
-  "⚠️ Perdendo velocidade! Volte e acelere!",
-  "🔄 Suas chances estão diminuindo!",
-  "⏰ Não deixe a sorte escapar!",
-  "🎯 Retome o controle da roleta!",
-  "💨 A velocidade está caindo!"
-];
-
 interface RoletaDaSorteProps {
   idIndicador: string;
   nomeIndicador: string;
@@ -47,20 +26,16 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
   const [rotacao, setRotacao] = useState(0);
   const [velocidade, setVelocidade] = useState(0);
   const [girando, setGirando] = useState(false);
-  const [mouseNaZona, setMouseNaZona] = useState(false);
+  const [ativo, setAtivo] = useState(false);
   const [tempoRestante, setTempoRestante] = useState<number | null>(null);
-  const [tempoExpirado, setTempoExpirado] = useState(false);
   const [parando, setParando] = useState(false);
   const [mensagemAtual, setMensagemAtual] = useState<string>('');
-  const [perdendoVelocidade, setPerdendoVelocidade] = useState(false);
-  const [desacelerandoFinal, setDesacelerandoFinal] = useState(false);
-  const lastMousePosRef = useRef({ x: 0, y: 0 });
+
   const premioGeradoRef = useRef(false);
   const roletaRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
   const timerRef = useRef<number | null>(null);
   const intervalRef = useRef<number | null>(null);
-  const mensagemIntervalRef = useRef<number | null>(null);
 
   const TEMPO_LIMITE = 10; // 10 segundos
 
@@ -79,41 +54,31 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
   // Otimização: memoizar premios com cores
   const premiosMemoized = useMemo(() => PREMIOS, []);
 
-  // Função para sortear prêmio com useCallback para evitar re-renders
-  const sortearPremio = useCallback(async () => {
-    // Previne sorteio duplicado durante o mesmo ciclo
-    if (premioGeradoRef.current) {
-      console.log('⚠️ Tentativa de sortear prêmio duplicado - ignorando');
-      return;
-    }
+  // Função para sortear prêmio
+  const sortearPremio = useCallback(() => {
+    if (premioGeradoRef.current) return;
 
     premioGeradoRef.current = true;
-    
-    // Sorteia um prêmio aleatório
     const premioIndex = Math.floor(Math.random() * premiosMemoized.length);
     const premio = premiosMemoized[premioIndex];
     
     console.log('🎲 Prêmio sorteado:', premio.descricao, 'Index:', premioIndex);
     
     setPremioSorteado({ premio, index: premioIndex });
-  }, [idIndicador, premiosMemoized]);
+  }, [premiosMemoized]);
 
   // Função para resetar a roleta
   const resetarRoleta = useCallback(() => {
-    // Reset de todos os estados
     setRotacao(0);
     setVelocidade(0);
     setGirando(false);
-    setMouseNaZona(false);
+    setAtivo(false);
     setTempoRestante(null);
-    setTempoExpirado(false);
     setParando(false);
     setMensagemAtual('');
-    setPerdendoVelocidade(false);
-    setDesacelerandoFinal(false);
     setPremioSorteado(null);
     
-    // Limpar todos os timers de forma mais robusta
+    // Limpar todos os timers
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -121,10 +86,6 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
-    }
-    if (mensagemIntervalRef.current) {
-      clearInterval(mensagemIntervalRef.current);
-      mensagemIntervalRef.current = null;
     }
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -137,19 +98,17 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
       roletaRef.current.style.transform = 'rotate(0deg)';
     }
     
-    // Reset da posição do mouse
-    lastMousePosRef.current = { x: 0, y: 0 };
     premioGeradoRef.current = false;
   }, []);
 
+  // Inicialização
   useEffect(() => {
     resetarRoleta();
     sortearPremio();
   }, [sortearPremio, resetarRoleta]);
 
-  // Otimização: função para parar a roleta usando CSS transitions
+  // Função para parar a roleta
   const pararRoleta = useCallback(() => {
-    // Múltiplas verificações de segurança para evitar execuções duplicadas
     if (!premioSorteado || parando) return;
     
     console.log('🛑 Parando roleta - Prêmio:', premioSorteado.premio.descricao, 'Index:', premioSorteado.index);
@@ -167,7 +126,6 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     const rotacaoAtual = rotacao % 360;
     
     // Ajuste para alinhar com o ponteiro (que está no topo)
-    // O segmento inicia em -90°, então o centro do segmento é em -90° + index * grausPorSegmento + (grausPorSegmento / 2)
     const anguloAlvo = -90 + premioSorteado.index * grausPorSegmento + (grausPorSegmento / 2);
     
     console.log('🎯 DEBUG ÂNGULO:');
@@ -177,7 +135,6 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     console.log('   - Ângulo alvo calculado:', anguloAlvo);
     
     // Calcula quantos graus faltam para chegar no prêmio correto
-    // Para alinhar com o ponteiro no topo (0°), precisamos girar até que o ângulo alvo fique em 0°
     let ajuste = (360 - anguloAlvo) % 360;
     console.log('   - Ajuste final:', ajuste);
     
@@ -196,89 +153,17 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     }
   }, [premioSorteado, parando, rotacao, grausPorSegmento, onPremioRevelado]);
 
-  // Animação com desaceleração contínua
-  useEffect(() => {
-    if (!girando) return;
-
-    const animar = () => {
-      setRotacao(prev => prev + velocidade);
-
-      // Sempre desacelera quando não está parando, mesmo sem mouse
-      if (!parando && velocidade > 0) {
-        let fatorDesaceleracao;
-        
-        if (mouseNaZona) {
-          fatorDesaceleracao = 0.995; // Desacelera muito pouco com mouse
-        } else if (tempoExpirado) {
-          fatorDesaceleracao = 0.975; // Desacelera mais rápido quando tempo expira
-        } else {
-          fatorDesaceleracao = 0.985; // Desacelera normalmente sem mouse
-        }
-        
-        setVelocidade(prev => Math.max(0, prev * fatorDesaceleracao));
-        
-        // Detecta se está perdendo velocidade
-        setPerdendoVelocidade(!mouseNaZona && velocidade < 10 && velocidade > 0.5 && !tempoExpirado);
-        
-        // Detecta se está na desaceleração final (tempo expirado mas ainda girando)
-        setDesacelerandoFinal(tempoExpirado && velocidade > 0.5);
-      }
-
-      // Para apenas quando velocidade muito baixa (independente do tempo)
-      if (velocidade < 0.5 && !parando && premioSorteado) {
-        pararRoleta();
-        return;
-      }
-
-      animationFrameRef.current = requestAnimationFrame(animar);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animar);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [girando, velocidade, mouseNaZona, premioSorteado, tempoExpirado, parando, pararRoleta]);
-
-  // Detecção de movimento otimizada - sem debounce para máxima responsividade
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!mouseNaZona || !premioSorteado || tempoExpirado || parando) return;
-
-    const deltaX = e.clientX - lastMousePosRef.current.x;
-    const deltaY = e.clientY - lastMousePosRef.current.y;
+  // Nova lógica: inicia automaticamente quando ativada e gira por 10 segundos
+  const iniciarRoleta = useCallback(() => {
+    if (ativo || !premioSorteado) return;
     
-    // Cálculo simplificado - sem sqrt para melhor performance
-    const movimento = Math.abs(deltaX) + Math.abs(deltaY);
-
-    // Velocidade mais responsiva e suave
-    setVelocidade(Math.min(movimento * 0.8, 25));
+    setAtivo(true);
     setGirando(true);
-
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-  }, [mouseNaZona, premioSorteado, tempoExpirado, parando]);
-
-  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
-    if (tempoExpirado) return;
+    setVelocidade(20); // Velocidade inicial alta
+    setTempoRestante(10);
+    setMensagemAtual('🎰 Roleta ativada! Girando por 10 segundos...');
     
-    setMouseNaZona(true);
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY };
-    
-    // Inicia o timer de 10 segundos
-    setTempoRestante(TEMPO_LIMITE);
-    
-    // Define a primeira mensagem
-    setMensagemAtual(MENSAGENS_MOTIVACIONAIS[0]);
-    
-    // Alterna as mensagens a cada 2 segundos
-    let mensagemIndex = 0;
-    mensagemIntervalRef.current = setInterval(() => {
-      mensagemIndex = (mensagemIndex + 1) % MENSAGENS_MOTIVACIONAIS.length;
-      setMensagemAtual(MENSAGENS_MOTIVACIONAIS[mensagemIndex]);
-    }, 2000);
-    
-    // Atualiza o contador a cada segundo
+    // Contador regressivo
     intervalRef.current = setInterval(() => {
       setTempoRestante((prev) => {
         if (prev === null || prev <= 1) {
@@ -289,53 +174,50 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
       });
     }, 1000);
     
-    // Timer para expirar após 10 segundos
+    // Timer para parar após 10 segundos
     timerRef.current = setTimeout(() => {
-      setTempoExpirado(true);
-      setMouseNaZona(false);
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (mensagemIntervalRef.current) clearInterval(mensagemIntervalRef.current);
-      setTempoRestante(null);
-      setMensagemAtual('');
-    }, TEMPO_LIMITE * 1000);
-  }, [tempoExpirado, TEMPO_LIMITE]);
+      setMensagemAtual('🎯 Parando a roleta...');
+      setTimeout(() => pararRoleta(), 500);
+    }, 10000);
+    
+  }, [ativo, premioSorteado, pararRoleta]);
 
-  const handleMouseLeave = useCallback(() => {
-    setMouseNaZona(false);
-    
-    // Limpa os timers se o mouse sair antes do tempo
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (mensagemIntervalRef.current) {
-      clearInterval(mensagemIntervalRef.current);
-      mensagemIntervalRef.current = null;
-    }
-    setTempoRestante(null);
-    
-    // Se ainda há velocidade, mostra mensagens de perda de velocidade
-    if (velocidade > 0.5 && !tempoExpirado) {
-      let mensagemIndex = 0;
-      setMensagemAtual(MENSAGENS_PERDENDO_VELOCIDADE[0]);
+  // Animação contínua da roleta
+  useEffect(() => {
+    if (!girando) return;
+
+    const animar = () => {
+      setRotacao(prev => prev + velocidade);
       
-      mensagemIntervalRef.current = setInterval(() => {
-        mensagemIndex = (mensagemIndex + 1) % MENSAGENS_PERDENDO_VELOCIDADE.length;
-        setMensagemAtual(MENSAGENS_PERDENDO_VELOCIDADE[mensagemIndex]);
-      }, 1500);
-    } else {
-      setMensagemAtual('');
+      // Desaceleração gradual após 8 segundos
+      if (ativo && tempoRestante !== null && tempoRestante <= 2) {
+        setVelocidade(prev => Math.max(prev * 0.96, 0.5));
+      }
+      
+      if (velocidade > 0.1) {
+        animationFrameRef.current = requestAnimationFrame(animar);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animar);
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [girando, velocidade, ativo, tempoRestante]);
+
+  // Novo handler: apenas detecta hover para iniciar
+  const handleMouseEnter = useCallback(() => {
+    if (!ativo && premioSorteado && !parando) {
+      iniciarRoleta();
     }
-  }, [velocidade, tempoExpirado]);
+  }, [ativo, premioSorteado, parando, iniciarRoleta]);
 
   // Cleanup dos timers quando o componente desmontar
   useEffect(() => {
     return () => {
-      // Limpa todos os timers e animações
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -344,16 +226,11 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      if (mensagemIntervalRef.current) {
-        clearInterval(mensagemIntervalRef.current);
-        mensagemIntervalRef.current = null;
-      }
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = undefined;
       }
       
-      // Reset da transformação CSS para evitar problemas visuais
       if (roletaRef.current) {
         roletaRef.current.style.transition = '';
         roletaRef.current.style.transform = 'rotate(0deg)';
@@ -395,177 +272,127 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
         </div>
 
         <div className="flex items-center justify-center gap-16 mb-8">
-          {/* Zona de Ativação - Esquerda */}
+          {/* Zona de Ativação */}
           <div
-            onMouseMove={handleMouseMove}
             onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
             className="text-center cursor-pointer flex-shrink-0 p-8 rounded-3xl transition-all"
             style={{
               minWidth: '700px',
               minHeight: '700px',
-              backgroundColor: mouseNaZona ? 'rgba(255, 255, 255, 0.1)' : 
-                              desacelerandoFinal ? 'rgba(255, 0, 0, 0.1)' :
-                              perdendoVelocidade ? 'rgba(255, 165, 0, 0.1)' : 'transparent',
-              border: mouseNaZona ? '3px dashed #FFD700' : 
-                     desacelerandoFinal ? '3px dashed #FF0000' :
-                     perdendoVelocidade ? '3px dashed #FFA500' : '3px dashed rgba(255, 255, 255, 0.3)'
+              backgroundColor: ativo ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+              border: ativo ? '3px solid rgba(255, 255, 255, 0.3)' : '3px solid transparent',
+              boxShadow: ativo ? '0 0 30px rgba(255, 255, 255, 0.2)' : 'none'
             }}
           >
-            <img 
-              src="/lampada.png" 
-              alt="Lâmpada" 
-              className={`w-[550px] h-[350px] mx-auto mb-6 transition-transform will-change-transform ${
-                mouseNaZona ? 'animate-bounce scale-110' : 
-                desacelerandoFinal ? 'animate-pulse scale-100 opacity-60' :
-                perdendoVelocidade ? 'animate-pulse scale-105 opacity-80' : 'scale-100'
-              }`}
-              loading="eager"
-              decoding="async"
-              style={{ 
-                backfaceVisibility: 'hidden',
-                transform: 'translateZ(0)', // Força hardware acceleration
-                filter: desacelerandoFinal ? 'brightness(0.6) sepia(0.5) hue-rotate(-15deg)' :
-                        perdendoVelocidade ? 'brightness(0.8) sepia(0.3) hue-rotate(15deg)' : 'none'
-              }}
-            />
-            <p className="text-3xl font-bold text-white mb-3">
-              Zona de Ativação
-            </p>
-            {tempoRestante !== null && !tempoExpirado && (
-              <>
-                <p className="text-laranja font-bold text-6xl mb-4 animate-pulse">
-                  {tempoRestante}s
-                </p>
-                {mensagemAtual && (
-                  <p className="text-yellow-300 font-bold text-2xl mb-2 animate-pulse">
-                    {mensagemAtual}
-                  </p>
-                )}
-              </>
-            )}
-            {desacelerandoFinal ? (
-              <div className="text-center">
-                <p className="text-red-400 font-bold text-2xl mb-2 animate-pulse">
-                  ⏰ Tempo esgotado! Desacelerando...
-                </p>
-                <p className="text-orange-300 font-medium text-xl">
-                  Velocidade: {Math.round(velocidade * 10)}% | Aguarde o resultado!
-                </p>
-              </div>
-            ) : tempoExpirado ? (
-              <p className="text-red-400 font-medium text-2xl">
-                Tempo esgotado! Aguarde o resultado...
-              </p>
-            ) : perdendoVelocidade ? (
-              <div className="text-center">
-                <p className="text-orange-400 font-bold text-2xl mb-2 animate-pulse">
-                  {mensagemAtual}
-                </p>
-                <p className="text-yellow-300 font-medium text-xl">
-                  Velocidade: {Math.round(velocidade * 10)}% | Volte para acelerar!
-                </p>
-              </div>
-            ) : !mouseNaZona ? (
-              <p className="text-white font-medium text-2xl">
-                Passe o mouse aqui e esfregue por 10 segundos!
-              </p>
-            ) : null}
-          </div>
-
-          {/* Roleta - Direita */}
-          <div className="relative w-[650px] h-[650px] flex-shrink-0">
-            <div
-              ref={roletaRef}
-              className="w-full h-full will-change-transform"
-              style={{ 
-                transform: `rotate(${rotacao}deg)`,
-                backfaceVisibility: 'hidden',
-                transformOrigin: 'center center'
-              }}
-            >
-              <svg
-                className="w-full h-full"
-                viewBox="0 0 400 400"
-                style={{ willChange: 'auto' }}
+            <div className="relative">
+              <div 
+                ref={roletaRef}
+                className="relative mx-auto"
+                style={{ 
+                  width: '500px', 
+                  height: '500px',
+                  transform: `rotate(${rotacao}deg)`,
+                  willChange: girando ? 'transform' : 'auto'
+                }}
               >
-                {PREMIOS.map((premio: Premio, index: number) => {
-                  const startAngle = index * grausPorSegmento - 90;
-                  const endAngle = startAngle + grausPorSegmento;
-                  
-                  // Debug: log da posição dos segmentos
-                  if (index === 0) {
-                    console.log('🔍 SEGMENTOS DA ROLETA:');
-                    PREMIOS.forEach((p, i) => {
-                      const start = i * grausPorSegmento - 90;
-                      const mid = start + grausPorSegmento / 2;
-                      console.log(`   ${i}: ${p.descricao} - Start: ${start}°, Mid: ${mid}°`);
-                    });
-                  }
+                <svg
+                  width="500"
+                  height="500"
+                  viewBox="0 0 400 400"
+                  style={{ willChange: 'auto' }}
+                >
+                  {PREMIOS.map((premio: Premio, index: number) => {
+                    const startAngle = index * grausPorSegmento - 90;
+                    const endAngle = startAngle + grausPorSegmento;
+                    
+                    // Debug: log da posição dos segmentos
+                    if (index === 0) {
+                      console.log('🔍 SEGMENTOS DA ROLETA:');
+                      PREMIOS.forEach((p, i) => {
+                        const start = i * grausPorSegmento - 90;
+                        const mid = start + grausPorSegmento / 2;
+                        console.log(`   ${i}: ${p.descricao} - Start: ${start}°, Mid: ${mid}°`);
+                      });
+                    }
 
-                  const x1 = 200 + 190 * Math.cos((startAngle * Math.PI) / 180);
-                  const y1 = 200 + 190 * Math.sin((startAngle * Math.PI) / 180);
-                  const x2 = 200 + 190 * Math.cos((endAngle * Math.PI) / 180);
-                  const y2 = 200 + 190 * Math.sin((endAngle * Math.PI) / 180);
+                    const x1 = 200 + 190 * Math.cos((startAngle * Math.PI) / 180);
+                    const y1 = 200 + 190 * Math.sin((startAngle * Math.PI) / 180);
+                    const x2 = 200 + 190 * Math.cos((endAngle * Math.PI) / 180);
+                    const y2 = 200 + 190 * Math.sin((endAngle * Math.PI) / 180);
 
-                  const midAngle = startAngle + grausPorSegmento / 2;
-                  const textX = 200 + 130 * Math.cos((midAngle * Math.PI) / 180);
-                  const textY = 200 + 130 * Math.sin((midAngle * Math.PI) / 180);
+                    const midAngle = startAngle + grausPorSegmento / 2;
+                    const textX = 200 + 130 * Math.cos((midAngle * Math.PI) / 180);
+                    const textY = 200 + 130 * Math.sin((midAngle * Math.PI) / 180);
 
-                  return (
-                    <g key={index}>
-                      <path
-                        d={`M 200 200 L ${x1} ${y1} A 190 190 0 0 1 ${x2} ${y2} Z`}
-                        fill={premio.cor}
-                        stroke="white"
-                        strokeWidth="3"
-                      />
-                      <text
-                        x={textX}
-                        y={textY}
-                        fill="black"
-                        fontSize="16"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                        transform={`rotate(${midAngle + 90}, ${textX}, ${textY})`}
-                        style={{ pointerEvents: 'none' }}
-                      >
-                        <tspan x={textX} dy="0">{premio.descricao.split(' ')[0]}</tspan>
-                        <tspan x={textX} dy="18">{premio.descricao.split(' ').slice(1).join(' ')}</tspan>
-                      </text>
-                    </g>
-                  );
-                })}
-                <circle cx="200" cy="200" r="50" fill="white" />
-                <foreignObject x="150" y="150" width="100" height="100">
-                  <img 
-                    src="/logo.png" 
-                    alt="Logo" 
-                    className="w-full h-full object-contain rounded-full"
-                    loading="eager"
-                    decoding="async"
-                  />
-                </foreignObject>
-              </svg>
-            </div>
+                    return (
+                      <g key={index}>
+                        <path
+                          d={`M 200 200 L ${x1} ${y1} A 190 190 0 0 1 ${x2} ${y2} Z`}
+                          fill={premio.cor}
+                          stroke="white"
+                          strokeWidth="3"
+                        />
+                        <text
+                          x={textX}
+                          y={textY}
+                          fill="black"
+                          fontSize="16"
+                          fontWeight="bold"
+                          textAnchor="middle"
+                          transform={`rotate(${midAngle + 90}, ${textX}, ${textY})`}
+                          style={{ pointerEvents: 'none' }}
+                        >
+                          <tspan x={textX} dy="0">{premio.descricao.split(' ')[0]}</tspan>
+                          <tspan x={textX} dy="18">{premio.descricao.split(' ').slice(1).join(' ')}</tspan>
+                        </text>
+                      </g>
+                    );
+                  })}
+                  <circle cx="200" cy="200" r="50" fill="white" />
+                  <foreignObject x="150" y="150" width="100" height="100">
+                    <img 
+                      src="/logo.png" 
+                      alt="Logo" 
+                      className="w-full h-full object-contain rounded-full"
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </foreignObject>
+                </svg>
+              </div>
 
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3">
-              <div className="w-0 h-0 border-l-[30px] border-r-[30px] border-t-[60px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3">
+                <div className="w-0 h-0 border-l-[30px] border-r-[30px] border-t-[60px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
+              </div>
             </div>
           </div>
         </div>
 
-        {girando && velocidade > 5 && (
-          <p className="text-center text-yellow-300 text-lg font-semibold mt-6 animate-pulse">
-            Girando a roleta...
-          </p>
-        )}
-
-        {girando && velocidade < 5 && velocidade > 0.1 && (
-          <p className="text-center text-yellow-300 text-lg font-semibold mt-6 animate-pulse">
-            Parando...
-          </p>
-        )}
+        {/* Status e mensagens */}
+        <div className="text-center space-y-4">
+          {!ativo && !parando && (
+            <p className="text-yellow-300 text-xl font-semibold animate-pulse">
+              👆 Passe o mouse sobre a roleta para ativar!
+            </p>
+          )}
+          
+          {ativo && tempoRestante !== null && tempoRestante > 0 && (
+            <div className="space-y-2">
+              <p className="text-yellow-300 text-2xl font-bold">
+                ⏱️ {tempoRestante}s restantes
+              </p>
+              <p className="text-white text-lg">
+                {mensagemAtual}
+              </p>
+            </div>
+          )}
+          
+          {parando && (
+            <p className="text-green-300 text-xl font-semibold animate-pulse">
+              🎯 Parando na sua sorte...
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
