@@ -236,7 +236,7 @@ app.post('/api/leads', async (req, res) => {
 // Listar todos os prêmios
 app.get('/api/premios', async (req, res) => {
   try {
-    const { nome, email, telefone } = req.body;
+    const premios = await readCSV(FILES.PREMIOS);
     res.json(premios);
   } catch (error) {
     console.error('Erro ao ler prêmios:', error);

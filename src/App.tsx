@@ -66,8 +66,27 @@ function App() {
     setEtapa(novaEtapa);
   };
 
-  const handleSetIndicadorTeste = () => {
-    setIndicador({ id: 'Dev123', nome: 'Desenvolvedor Teste' });
+  const handleSetIndicadorTeste = async () => {
+    if (indicador) return;
+
+    const { api } = await import('./services/apiBackend');
+
+    try {
+      const uniqueSuffix = Date.now().toString(36);
+      const indicadorTeste = await api.salvarIndicador({
+        nome: 'Desenvolvedor Teste',
+        email: `dev+${uniqueSuffix}@teste.com`,
+        telefone: '11999999999',
+      });
+
+      setIndicador({ id: indicadorTeste.id, nome: indicadorTeste.nome });
+    } catch (error) {
+      console.error('Erro ao criar indicador de teste:', error);
+      const mensagem = error instanceof Error
+        ? error.message
+        : 'Não foi possível criar o indicador de teste.';
+      alert(mensagem);
+    }
   };
 
   return (

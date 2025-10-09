@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { UserPlus, Mail, Phone } from 'lucide-react';
 import { api } from '../services/apiBackend';
-import { formatarTelefone, validarEmail } from '../utils/validation';
+import { formatarTelefone, validarEmail, validarNome } from '../utils/validation';
 import type { CreateIndicadorDTO } from '../types/database';
 
 interface CadastroIndicadorProps {
@@ -18,18 +18,7 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
   const [erros, setErros] = useState<Partial<Record<keyof CreateIndicadorDTO, string>>>({});
   const [loading, setLoading] = useState(false);
 
-  const validarCampo = (campo: keyof CreateIndicadorDTO, valor: string): string | null => {
-    switch (campo) {
-      case 'nome':
-        return valor.length < 3 ? 'Nome deve ter no mínimo 3 caracteres' : null;
-      case 'email':
-        return !validarEmail(valor) ? 'E-mail inválido' : null;
-      case 'telefone':
-        return valor.replace(/\D/g, '').length < 10 ? 'Telefone inválido' : null;
-      default:
-        return null;
-    }
-  };
+
 
   const handleChange = (campo: keyof CreateIndicadorDTO, valor: string) => {
   let valorFormatado = valor;
@@ -49,13 +38,13 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
     e.preventDefault();
 
     const novosErros: Partial<Record<keyof CreateIndicadorDTO, string>> = {};
+    const erroNome = validarNome(formData.nome);
+    const erroEmail = !validarEmail(formData.email) ? 'E-mail inválido' : null;
+    const erroTelefone = formData.telefone.replace(/\D/g, '').length < 10 ? 'Telefone inválido' : null;
 
-    (Object.keys(formData) as Array<keyof CreateIndicadorDTO>).forEach(campo => {
-      const erro = validarCampo(campo, formData[campo]);
-      if (erro) {
-        novosErros[campo] = erro;
-      }
-    });
+    if (erroNome) novosErros.nome = erroNome;
+    if (erroEmail) novosErros.email = erroEmail;
+    if (erroTelefone) novosErros.telefone = erroTelefone;
 
     if (Object.keys(novosErros).length > 0) {
       setErros(novosErros);

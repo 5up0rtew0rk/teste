@@ -6,12 +6,13 @@ type Etapa = 'cadastro-indicador' | 'cadastro-leads' | 'roleta';
 interface DevNavigationProps {
   etapaAtual: Etapa;
   onChangeEtapa: (etapa: Etapa) => void;
-  onSetIndicadorTeste: () => void;
+  onSetIndicadorTeste: () => void | Promise<void>;
   indicador: { id: string; nome: string } | null;
 }
 
 export function DevNavigation({ etapaAtual, onChangeEtapa, onSetIndicadorTeste, indicador }: DevNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCreatingIndicador, setIsCreatingIndicador] = useState(false);
 
   const etapas = [
     {
@@ -70,10 +71,23 @@ export function DevNavigation({ etapaAtual, onChangeEtapa, onSetIndicadorTeste, 
             </p>
             {!indicador && (
               <button
-                onClick={onSetIndicadorTeste}
-                className="mt-2 text-xs bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors"
+                onClick={async () => {
+                  if (isCreatingIndicador) return;
+                  try {
+                    setIsCreatingIndicador(true);
+                    await onSetIndicadorTeste();
+                  } finally {
+                    setIsCreatingIndicador(false);
+                  }
+                }}
+                disabled={isCreatingIndicador}
+                className={`mt-2 text-xs px-3 py-1 rounded-md transition-colors ${
+                  isCreatingIndicador
+                    ? 'bg-blue-400 text-white cursor-wait'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                }`}
               >
-                Definir Teste (Dev123)
+                {isCreatingIndicador ? 'Criando indicador...' : 'Criar indicador de teste'}
               </button>
             )}
           </div>

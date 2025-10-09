@@ -56,6 +56,7 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
   const [perdendoVelocidade, setPerdendoVelocidade] = useState(false);
   const [desacelerandoFinal, setDesacelerandoFinal] = useState(false);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
+  const premioGeradoRef = useRef(false);
   const roletaRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
   const timerRef = useRef<number | null>(null);
@@ -81,11 +82,13 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
 
   // Função para sortear prêmio com useCallback para evitar re-renders
   const sortearPremio = useCallback(async () => {
-    // Previne sorteio se já existe um prêmio sorteado
-    if (premioSorteado) {
+    // Previne sorteio duplicado durante o mesmo ciclo
+    if (premioGeradoRef.current) {
       console.log('⚠️ Tentativa de sortear prêmio duplicado - ignorando');
       return;
     }
+
+    premioGeradoRef.current = true;
     
     // Sorteia um prêmio aleatório
     const premioIndex = Math.floor(Math.random() * premiosMemoized.length);
@@ -105,7 +108,7 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     }
 
     setPremioSorteado({ premio, index: premioIndex });
-  }, [idIndicador, premiosMemoized, premioSorteado]);
+  }, [idIndicador, premiosMemoized]);
 
   // Função para resetar a roleta
   const resetarRoleta = useCallback(() => {
@@ -148,6 +151,7 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     
     // Reset da posição do mouse
     lastMousePosRef.current = { x: 0, y: 0 };
+    premioGeradoRef.current = false;
   }, []);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Phone, User, CheckCircle, AlertCircle, Sparkles, Send, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Phone, User, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../services/apiBackend';
 import { formatarTelefone, validarNome, validarTelefone } from '../utils/validation';
 import type { CreateLeadDTO } from '../types/database';
