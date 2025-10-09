@@ -167,10 +167,19 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     const rotacaoAtual = rotacao % 360;
     
     // Ajuste para alinhar com o ponteiro (que está no topo)
-    const anguloAlvo = premioSorteado.index * grausPorSegmento + (grausPorSegmento / 2);
+    // O segmento inicia em -90°, então o centro do segmento é em -90° + index * grausPorSegmento + (grausPorSegmento / 2)
+    const anguloAlvo = -90 + premioSorteado.index * grausPorSegmento + (grausPorSegmento / 2);
+    
+    console.log('🎯 DEBUG ÂNGULO:');
+    console.log('   - Prêmio sorteado:', premioSorteado.premio.descricao);
+    console.log('   - Index:', premioSorteado.index);
+    console.log('   - Graus por segmento:', grausPorSegmento);
+    console.log('   - Ângulo alvo calculado:', anguloAlvo);
     
     // Calcula quantos graus faltam para chegar no prêmio correto
-    let ajuste = (360 - anguloAlvo + 90) % 360;
+    // Para alinhar com o ponteiro no topo (0°), precisamos girar até que o ângulo alvo fique em 0°
+    let ajuste = (360 - anguloAlvo) % 360;
+    console.log('   - Ajuste final:', ajuste);
     
     // Adiciona 5 voltas completas + o ajuste final
     const rotacaoFinalAjustada = rotacao - rotacaoAtual + (360 * 5) + ajuste;
@@ -483,6 +492,16 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
                 {PREMIOS.map((premio: Premio, index: number) => {
                   const startAngle = index * grausPorSegmento - 90;
                   const endAngle = startAngle + grausPorSegmento;
+                  
+                  // Debug: log da posição dos segmentos
+                  if (index === 0) {
+                    console.log('🔍 SEGMENTOS DA ROLETA:');
+                    PREMIOS.forEach((p, i) => {
+                      const start = i * grausPorSegmento - 90;
+                      const mid = start + grausPorSegmento / 2;
+                      console.log(`   ${i}: ${p.descricao} - Start: ${start}°, Mid: ${mid}°`);
+                    });
+                  }
 
                   const x1 = 200 + 190 * Math.cos((startAngle * Math.PI) / 180);
                   const y1 = 200 + 190 * Math.sin((startAngle * Math.PI) / 180);
