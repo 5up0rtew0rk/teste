@@ -69,6 +69,8 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
 
   // Função para resetar a roleta
   const resetarRoleta = useCallback(() => {
+    console.log('🔄 Resetando roleta...');
+    
     setRotacao(0);
     setVelocidade(0);
     setGirando(false);
@@ -114,8 +116,7 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     console.log('🛑 Parando roleta - Prêmio:', premioSorteado.premio.descricao, 'Index:', premioSorteado.index);
     
     setParando(true);
-    setVelocidade(0);
-    setGirando(false);
+    setMensagemAtual('🎯 Parando a roleta...');
     
     // Cancela a animação atual
     if (animationFrameRef.current) {
@@ -125,76 +126,84 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
     // Calcula a posição final correta
     const rotacaoAtual = rotacao % 360;
     
-    // Ajuste para alinhar com o ponteiro (que está no topo)
-    const anguloAlvo = -90 + premioSorteado.index * grausPorSegmento + (grausPorSegmento / 2);
+    // O ponteiro está no topo (0°), então queremos que o centro do prêmio fique alinhado
+    const anguloAlvoPremio = premioSorteado.index * grausPorSegmento + (grausPorSegmento / 2);
     
     console.log('🎯 DEBUG ÂNGULO:');
     console.log('   - Prêmio sorteado:', premioSorteado.premio.descricao);
     console.log('   - Index:', premioSorteado.index);
     console.log('   - Graus por segmento:', grausPorSegmento);
-    console.log('   - Ângulo alvo calculado:', anguloAlvo);
+    console.log('   - Ângulo do prêmio:', anguloAlvoPremio);
+    console.log('   - Rotação atual:', rotacaoAtual);
     
-    // Calcula quantos graus faltam para chegar no prêmio correto
-    let ajuste = (360 - anguloAlvo) % 360;
-    console.log('   - Ajuste final:', ajuste);
+    // Calcula a diferença necessária para alinhar o prêmio com o ponteiro
+    let diferencaParaPonteiro = (360 - anguloAlvoPremio) % 360;
     
-    // Adiciona 5 voltas completas + o ajuste final
-    const rotacaoFinalAjustada = rotacao - rotacaoAtual + (360 * 5) + ajuste;
+    // Adiciona voltas extras para o efeito visual + a diferença para o alinhamento correto
+    const voltasExtras = 360 * 3; // 3 voltas completas
+    const rotacaoFinal = rotacao - rotacaoAtual + voltasExtras + diferencaParaPonteiro;
     
-    // CSS transition otimizada para a parada final
+    console.log('   - Diferença para ponteiro:', diferencaParaPonteiro);
+    console.log('   - Rotação final calculada:', rotacaoFinal);
+    
+    // Para a animação requestAnimationFrame e usa CSS transition para desaceleração suave
+    setGirando(false);
+    setVelocidade(0);
+    
+    // CSS transition para desaceleração de 4 segundos
     if (roletaRef.current) {
-      roletaRef.current.style.transition = 'transform 2.5s cubic-bezier(0.25, 0.1, 0.25, 1)';
-      roletaRef.current.style.transform = `rotate(${rotacaoFinalAjustada}deg)`;
+      roletaRef.current.style.transition = 'transform 4s cubic-bezier(0.15, 0, 0.25, 1)';
+      roletaRef.current.style.transform = `rotate(${rotacaoFinal}deg)`;
       
+      // Atualiza o state após a transição e revela o prêmio
       setTimeout(() => {
-        setRotacao(rotacaoFinalAjustada);
+        setRotacao(rotacaoFinal);
+        setParando(false);
         onPremioRevelado(premioSorteado.premio);
-      }, 2800);
+      }, 4100); // 4.1 segundos para garantir que a transição terminou
     }
   }, [premioSorteado, parando, rotacao, grausPorSegmento, onPremioRevelado]);
 
-  // Nova lógica: inicia automaticamente quando ativada e gira por 10 segundos
+  // Lógica: inicia quando ativada e gira por exatos 10 segundos
   const iniciarRoleta = useCallback(() => {
-    if (ativo || !premioSorteado) return;
+    if (ativo || !premioSorteado || parando) return;
     
     setAtivo(true);
     setGirando(true);
-    setVelocidade(20); // Velocidade inicial alta
+    setVelocidade(20); // Velocidade constante por 10 segundos
     setTempoRestante(10);
-    setMensagemAtual('🎰 Roleta ativada! Girando por 10 segundos...');
     
     // Contador regressivo
     intervalRef.current = setInterval(() => {
       setTempoRestante((prev) => {
         if (prev === null || prev <= 1) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     
-    // Timer para parar após 10 segundos
+    // Timer para parar após EXATOS 10 segundos
     timerRef.current = setTimeout(() => {
-      setMensagemAtual('🎯 Parando a roleta...');
-      setTimeout(() => pararRoleta(), 500);
+      pararRoleta();
     }, 10000);
     
-  }, [ativo, premioSorteado, pararRoleta]);
+  }, [ativo, premioSorteado, parando, pararRoleta]);
 
-  // Animação contínua da roleta
+  // Animação contínua da roleta - velocidade constante por 10 segundos
   useEffect(() => {
-    if (!girando) return;
+    if (!girando || parando) return;
 
     const animar = () => {
       setRotacao(prev => prev + velocidade);
       
-      // Desaceleração gradual após 8 segundos
-      if (ativo && tempoRestante !== null && tempoRestante <= 2) {
-        setVelocidade(prev => Math.max(prev * 0.96, 0.5));
-      }
-      
-      if (velocidade > 0.1) {
+      // Mantém velocidade constante durante os 10 segundos
+      // Não há desaceleração aqui - isso será feito pelo CSS transition
+      if (girando && !parando) {
         animationFrameRef.current = requestAnimationFrame(animar);
       }
     };
@@ -206,7 +215,7 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [girando, velocidade, ativo, tempoRestante]);
+  }, [girando, velocidade, parando]);
 
   // Novo handler: apenas detecta hover para iniciar
   const handleMouseEnter = useCallback(() => {
@@ -271,33 +280,44 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-16 mb-8">
-          {/* Zona de Ativação */}
-          <div
-            onMouseEnter={handleMouseEnter}
-            className="text-center cursor-pointer flex-shrink-0 p-8 rounded-3xl transition-all"
-            style={{
-              minWidth: '700px',
-              minHeight: '700px',
-              backgroundColor: ativo ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              border: ativo ? '3px solid rgba(255, 255, 255, 0.3)' : '3px solid transparent',
-              boxShadow: ativo ? '0 0 30px rgba(255, 255, 255, 0.2)' : 'none'
-            }}
-          >
+        <div className="flex items-center justify-center gap-32 mb-8">
+          {/* Lâmpada Mágica - Zona de Ativação */}
+          <div className="flex items-center justify-center">
+            <div
+              onMouseEnter={handleMouseEnter}
+              className="cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0"
+              title={!ativo && !parando ? "Esfregue a lâmpada mágica para ativar a roleta!" : ""}
+            >
+              <img 
+              src="/lampada.png" 
+              alt="Lâmpada Mágica - Esfregue para ativar a roleta!" 
+              className={`w-[32rem] h-auto object-contain transition-all duration-300 ${
+                !ativo && !parando 
+                ? 'drop-shadow-[0_10px_30px_rgba(250,204,21,0.6)] animate-pulse' 
+                : 'drop-shadow-[0_10px_30px_rgba(250,204,21,0.4)]'
+              } ${ativo ? 'animate-bounce' : ''}`}
+              loading="eager"
+              decoding="async"
+              />
+            </div>
+          </div>
+
+          {/* Roleta */}
+          <div className="text-center flex-shrink-0">
             <div className="relative">
               <div 
                 ref={roletaRef}
                 className="relative mx-auto"
                 style={{ 
-                  width: '500px', 
-                  height: '500px',
+                  width: '600px', 
+                  height: '600px',
                   transform: `rotate(${rotacao}deg)`,
                   willChange: girando ? 'transform' : 'auto'
                 }}
               >
                 <svg
-                  width="500"
-                  height="500"
+                  width="600"
+                  height="600"
                   viewBox="0 0 400 400"
                   style={{ willChange: 'auto' }}
                 >
@@ -362,7 +382,7 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
               </div>
 
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3">
-                <div className="w-0 h-0 border-l-[30px] border-r-[30px] border-t-[60px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
+                <div className="w-0 h-0 border-l-[36px] border-r-[36px] border-t-[72px] border-l-transparent border-r-transparent border-t-yellow-400 drop-shadow-lg" />
               </div>
             </div>
           </div>
@@ -372,25 +392,21 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
         <div className="text-center space-y-4">
           {!ativo && !parando && (
             <p className="text-yellow-300 text-xl font-semibold animate-pulse">
-              👆 Passe o mouse sobre a roleta para ativar!
+              ✨ Esfregue a lâmpada mágica para ativar a roleta!
             </p>
           )}
           
-          {ativo && tempoRestante !== null && tempoRestante > 0 && (
-            <div className="space-y-2">
-              <p className="text-yellow-300 text-2xl font-bold">
-                ⏱️ {tempoRestante}s restantes
-              </p>
-              <p className="text-white text-lg">
-                {mensagemAtual}
-              </p>
-            </div>
-          )}
+
           
           {parando && (
-            <p className="text-green-300 text-xl font-semibold animate-pulse">
-              🎯 Parando na sua sorte...
-            </p>
+            <div className="space-y-2">
+              <p className="text-green-300 text-xl font-semibold animate-pulse">
+                🎯 Desacelerando...
+              </p>
+              <p className="text-white text-sm">
+                A roleta está parando no seu prêmio!
+              </p>
+            </div>
           )}
         </div>
       </div>

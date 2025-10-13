@@ -22,9 +22,9 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar, onTentarNovame
 
         <div className="text-center">
           <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-laranja rounded-full blur-xl opacity-50 animate-pulse" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-laranja to-verde-claro rounded-full flex items-center justify-center">
-              <Trophy className="w-12 h-12 text-white" />
+            <div className="absolute inset-0 bg-black rounded-full blur-xl opacity-50 animate-pulse" />
+            <div className="relative w-24 h-24 bg-gradient-to-br bg-green-800 rounded-full flex items-center justify-center">
+              <img src="public/genia.png" alt="" className="w-16 h-16 object-contain" />
             </div>
           </div>
 
@@ -33,11 +33,9 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar, onTentarNovame
           </h2>
 
           <div className="flex items-center justify-center gap-2 mb-6">
-            <Sparkles className="w-5 h-5 text-laranja" />
             <p className="text-lg text-white-600 font-medium">
               Você ganhou:
             </p>
-            <Sparkles className="w-5 h-5 text-laranja" />
           </div>
 
           <div
@@ -56,11 +54,11 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar, onTentarNovame
             <p className="text-sm text-white-700 leading-relaxed">
               {onTentarNovamente ? (
                 <>
-                  🎯 <span className="font-semibold">Modo Desenvolvimento:</span> Clique em "Tentar Novamente" para testar a roleta novamente ou "Entendido" para finalizar.
+                  Mostre ao apresentador esse prêmio.
                 </>
               ) : (
                 <>
-                  Mostre ao apresentador esse prêmio.
+                  Parabéns! Você ganhou um prêmio.
                   <span className="font-semibold"> Fique de olho nas suas mensagens!</span>
                 </>
               )}

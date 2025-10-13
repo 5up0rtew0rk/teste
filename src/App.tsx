@@ -3,7 +3,6 @@ import { CadastroIndicador } from './components/CadastroIndicador';
 import { CadastroLeads } from './components/CadastroLeads';
 import { RoletaDaSorte } from './components/RoletaDaSorte';
 import { PopupPremiacao } from './components/PopupPremiacao';
-import { DevNavigation } from './components/DevNavigation';
 import type { Premio } from './types/database';
 
 type Etapa = 'cadastro-indicador' | 'cadastro-leads' | 'roleta';
@@ -91,13 +90,6 @@ function App() {
 
   return (
     <>
-      {/* Navegação de Desenvolvimento */}
-      <DevNavigation
-        etapaAtual={etapa}
-        onChangeEtapa={handleDevChangeEtapa}
-        onSetIndicadorTeste={handleSetIndicadorTeste}
-        indicador={indicador}
-      />
 
       {etapa === 'cadastro-indicador' && (
         <CadastroIndicador onCadastroCompleto={handleCadastroIndicador} />

@@ -258,7 +258,7 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
               <button
               type="button"
               onClick={voltarLeadAnterior}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-30 bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+              className="absolute left-24 top-1/2 -translate-y-1/2 -translate-x-4 z-30 bg-gray-600 hover:bg-gray-500 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
               title="Clique para voltar ao contato anterior"
               >
               <ChevronLeft className="w-6 h-6" />
@@ -270,7 +270,7 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
               <button
                 type="button"
                 onClick={avancarProximoLead}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-30 bg-emerald-500 hover:bg-emerald-400 text-black p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 animate-pulse"
+                className="absolute right-24 top-1/2 -translate-y-1/2 translate-x-4 z-30 bg-emerald-500 hover:bg-emerald-400 text-black p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 animate-pulse"
                 title="Clique para ir ao próximo contato"
               >
                 <ChevronRight className="w-6 h-6" />
@@ -279,7 +279,7 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
             {/* Indicação para finalizar no último lead */}
             {leadAtual === 2 && leadsCompletos[leadAtual] && (
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-30 bg-emerald-500 text-black p-3 rounded-full shadow-lg animate-pulse">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-30 bg-emerald-500 text-black p-3 rounded-full shadow-lg animate-pulse">
                 <Send className="w-6 h-6" />
               </div>
             )}
