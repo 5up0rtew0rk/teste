@@ -1,8 +1,8 @@
 export interface Indicador {
   id: string;
   nome: string;
-  email: string;
   telefone: string;
+  cargo: string;
   data_cadastro: string;
 }
 
@@ -10,20 +10,18 @@ export interface Lead {
   id: string;
   id_indicador: string;
   nome: string;
-  email: string;
   telefone: string;
   data_cadastro: string;
 }
 
 export interface CreateIndicadorDTO {
   nome: string;
-  email: string;
   telefone: string;
+  cargo: string;
 }
 
 export interface CreateLeadDTO {
   nome: string;
-  email: string;
   telefone: string;
 }
 

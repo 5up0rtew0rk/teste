@@ -71,11 +71,10 @@ function App() {
     const { api } = await import('./services/apiBackend');
 
     try {
-      const uniqueSuffix = Date.now().toString(36);
       const indicadorTeste = await api.salvarIndicador({
         nome: 'Desenvolvedor Teste',
-        email: `dev+${uniqueSuffix}@teste.com`,
         telefone: '11999999999',
+        cargo: 'Desenvolvedor',
       });
 
       setIndicador({ id: indicadorTeste.id, nome: indicadorTeste.nome });

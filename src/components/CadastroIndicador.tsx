@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { UserPlus, Mail, Phone } from 'lucide-react';
+import { UserPlus, Phone, Briefcase } from 'lucide-react';
 import { api } from '../services/apiBackend';
-import { formatarTelefone, validarEmail, validarNome } from '../utils/validation';
+import { formatarTelefone, validarNome, validarTelefone, validarCargo } from '../utils/validation';
 import type { CreateIndicadorDTO } from '../types/database';
 
 interface CadastroIndicadorProps {
@@ -11,8 +11,8 @@ interface CadastroIndicadorProps {
 export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps) {
   const [formData, setFormData] = useState<CreateIndicadorDTO>({
     nome: '',
-    email: '',
     telefone: '',
+    cargo: '',
   });
 
   const [erros, setErros] = useState<Partial<Record<keyof CreateIndicadorDTO, string>>>({});
@@ -39,12 +39,12 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
 
     const novosErros: Partial<Record<keyof CreateIndicadorDTO, string>> = {};
     const erroNome = validarNome(formData.nome);
-    const erroEmail = !validarEmail(formData.email) ? 'E-mail inválido' : null;
-    const erroTelefone = formData.telefone.replace(/\D/g, '').length < 10 ? 'Telefone inválido' : null;
+    const erroTelefone = validarTelefone(formData.telefone);
+    const erroCargo = validarCargo(formData.cargo);
 
     if (erroNome) novosErros.nome = erroNome;
-    if (erroEmail) novosErros.email = erroEmail;
     if (erroTelefone) novosErros.telefone = erroTelefone;
+    if (erroCargo) novosErros.cargo = erroCargo;
 
     if (Object.keys(novosErros).length > 0) {
       setErros(novosErros);
@@ -59,7 +59,7 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
       });
       onCadastroCompleto(indicador.id);
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Erro ao cadastrar indicador. Verifique se o e-mail já não está cadastrado.';
+      const mensagem = error instanceof Error ? error.message : 'Erro ao cadastrar indicador';
       alert(mensagem);
     } finally {
       setLoading(false);
@@ -93,7 +93,7 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-grey-700 mb-2">
-                Nome Completo *
+                Nome Completo
               </label>
               <div className="relative">
                 <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-grey-400" />
@@ -111,30 +111,11 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-white-700 mb-2">
-                E-mail *
+              <label className="block text-sm font-semibold text-grey-700 mb-2">
+                Telefone
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white-400" />
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-verde-claro focus:border-verde-claro transition-all ${
-                    erros.email ? 'border-red-500' : 'border-gray-200'
-                  }`}
-                  placeholder="seu@email.com"
-                />
-              </div>
-              {erros.email && <p className="mt-1 text-sm text-red-600">{erros.email}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-white-700 mb-2">
-                Telefone/WhatsApp *
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-grey-400" />
                 <input
                   type="tel"
                   value={formData.telefone}
@@ -146,6 +127,25 @@ export function CadastroIndicador({ onCadastroCompleto }: CadastroIndicadorProps
                 />
               </div>
               {erros.telefone && <p className="mt-1 text-sm text-red-600">{erros.telefone}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-grey-700 mb-2">
+                Cargo
+              </label>
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-grey-400" />
+                <input
+                  type="text"
+                  value={formData.cargo}
+                  onChange={(e) => handleChange('cargo', e.target.value)}
+                  className={`w-full pl-11 pr-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-verde-claro focus:border-verde-claro transition-all ${
+                    erros.cargo ? 'border-red-500' : 'border-gray-200'
+                  }`}
+                  placeholder="Digite seu cargo"
+                />
+              </div>
+              {erros.cargo && <p className="mt-1 text-sm text-red-600">{erros.cargo}</p>}
             </div>
 
             {/* CPF removido */}

@@ -77,3 +77,21 @@ export const validarTelefone = (telefone: string): string | null => {
   // Aceita tanto 10 quanto 11 dígitos sem validações rígidas para facilitar testes
   return null;
 };
+
+export const validarCargo = (cargo: string): string | null => {
+  const cargoTrimmed = cargo.trim();
+  
+  if (!cargoTrimmed) {
+    return 'Cargo é obrigatório';
+  }
+  
+  if (cargoTrimmed.length < 2) {
+    return 'Cargo deve ter pelo menos 2 caracteres';
+  }
+  
+  if (cargoTrimmed.length > 50) {
+    return 'Cargo deve ter no máximo 50 caracteres';
+  }
+  
+  return null;
+};

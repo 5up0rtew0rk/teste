@@ -5,14 +5,12 @@ import { useImagePreloader } from './ImagePreloader';
 
 // Prêmios disponíveis
 const PREMIOS: Premio[] = [
-  { descricao: 'teste1', cor: '#FFD700' },
-  { descricao: 'teste2', cor: '#FF6B6B' },
-  { descricao: 'teste3', cor: '#4ECDC4' },
-  { descricao: 'teste4', cor: '#95E1D3' },
-  { descricao: 'teste5', cor: '#F38181' },
-  { descricao: 'teste6', cor: '#AA96DA' },
-  { descricao: 'teste7', cor: '#FCBAD3' },
-  { descricao: 'teste8', cor: '#A8E6CF' },
+  { descricao: 'Copo', cor: '#ff9700 ' },
+  { descricao: 'Espelho', cor: '#04d38a  ' },
+  { descricao: 'Planner', cor: '#04d38a  ' },
+  { descricao: 'Não foi dessa vez', cor: '#04d38a  ' },
+  { descricao: 'Que pena', cor: '#04d38a  ' },
+  { descricao: 'Quase!!', cor: '#04d38a  ' },
 ];
 
 interface RoletaDaSorteProps {
@@ -315,6 +313,28 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
                   willChange: girando ? 'transform' : 'auto'
                 }}
               >
+                {/* Logo centralizada com sombra - posicionamento absoluto para garantir centralização */}
+                <div 
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                  style={{
+                    transform: `rotate(${-rotacao}deg)`, // Contrarota para manter a logo sempre na posição correta
+                    willChange: girando ? 'transform' : 'auto'
+                  }}
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img 
+                      src="/logo.png" 
+                      alt="Logo" 
+                      className="w-28 h-28 object-contain"
+                      style={{
+                        filter: 'drop-shadow(0 6px 16px rgba(0, 0, 0, 0.7)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4))',
+                        transform: 'translateZ(0)' // Força aceleração de hardware
+                      }}
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </div>
+                </div>
                 <svg
                   width="600"
                   height="600"
@@ -369,15 +389,6 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
                     );
                   })}
                   <circle cx="200" cy="200" r="50" fill="white" />
-                  <foreignObject x="150" y="150" width="100" height="100">
-                    <img 
-                      src="/logo.png" 
-                      alt="Logo" 
-                      className="w-full h-full object-contain rounded-full"
-                      loading="eager"
-                      decoding="async"
-                    />
-                  </foreignObject>
                 </svg>
               </div>
 
@@ -394,19 +405,6 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndi
             <p className="text-yellow-300 text-xl font-semibold animate-pulse">
               ✨ Esfregue a lâmpada mágica para ativar a roleta!
             </p>
-          )}
-          
-
-          
-          {parando && (
-            <div className="space-y-2">
-              <p className="text-green-300 text-xl font-semibold animate-pulse">
-                🎯 Desacelerando...
-              </p>
-              <p className="text-white text-sm">
-                A roleta está parando no seu prêmio!
-              </p>
-            </div>
           )}
         </div>
       </div>

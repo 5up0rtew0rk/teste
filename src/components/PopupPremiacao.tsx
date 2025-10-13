@@ -68,9 +68,9 @@ export function PopupPremiacao({ nomeIndicador, premio, onFechar, onTentarNovame
           <div className="flex gap-3">
             <button
               onClick={onFechar}
-              className="flex-1 bg-gradient-to-r from-verde-escuro to-verde-claro text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all"
+              className="flex-1 bg-gradient-to-r bg-laranja text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl hover:from-verde-escuro/90 hover:to-verde-claro/90 transform hover:-translate-y-0.5 transition-all"
             >
-              Entendido!
+              Nova Indicação!
             </button>
             
             {onTentarNovamente && (

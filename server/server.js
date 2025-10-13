@@ -129,33 +129,27 @@ app.get('/api/indicadores/:id', async (req, res) => {
 // Criar novo indicador
 app.post('/api/indicadores', async (req, res) => {
   try {
-    const { nome, email, telefone } = req.body;
+    const { nome, telefone, cargo } = req.body;
     
     // Validação básica
-    if (!nome || !email || !telefone) {
+    if (!nome || !telefone || !cargo) {
       return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
     }
     
     const indicadores = await readCSV(FILES.INDICADORES);
     
-    // Verifica se email já existe
-    if (indicadores.some(i => i.email === email)) {
-      return res.status(400).json({ error: 'E-mail já cadastrado' });
-    }
-    
-    
     const novoIndicador = {
       id: generateId(),
       nome,
-      email,
       telefone,
+      cargo,
       data_cadastro: new Date().toISOString(),
     };
     
     indicadores.push(novoIndicador);
     
     await writeCSV(FILES.INDICADORES, indicadores, [
-      'id', 'nome', 'email', 'telefone', 'data_cadastro'
+      'id', 'nome', 'telefone', 'cargo', 'data_cadastro'
     ]);
     
     res.status(201).json(novoIndicador);
@@ -212,7 +206,6 @@ app.post('/api/leads', async (req, res) => {
       id: generateId(),
       id_indicador,
       nome: lead.nome,
-      email: lead.email,
       telefone: lead.telefone,
       data_cadastro: new Date().toISOString(),
     }));
@@ -220,7 +213,7 @@ app.post('/api/leads', async (req, res) => {
     todosLeads.push(...novosLeads);
     
     await writeCSV(FILES.LEADS, todosLeads, [
-      'id', 'id_indicador', 'nome', 'email', 'telefone', 'data_cadastro'
+      'id', 'id_indicador', 'nome', 'telefone', 'data_cadastro'
     ]);
     
     res.status(201).json(novosLeads);

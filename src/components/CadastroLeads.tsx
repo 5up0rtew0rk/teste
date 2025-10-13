@@ -51,10 +51,25 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
 
   // Função para verificar se um lead está completo
   const verificarLeadCompleto = useCallback((indicacao: Indicacao): boolean => {
-    return indicacao.nome.trim().length > 0 && 
-           indicacao.telefone.trim().length > 0 &&
-           !validarCampo(indicacao.nome, 'nome') &&
-           !validarCampo(indicacao.telefone, 'telefone');
+    const nomeValido = indicacao.nome.trim().length > 0;
+    const telefoneValido = indicacao.telefone.trim().length > 0;
+    const nomePassouValidacao = !validarCampo(indicacao.nome, 'nome');
+    const telefonePassouValidacao = !validarCampo(indicacao.telefone, 'telefone');
+    
+    const completo = nomeValido && telefoneValido && nomePassouValidacao && telefonePassouValidacao;
+    
+    // Debug temporário
+    console.log(`Lead completo check:`, {
+      nome: indicacao.nome,
+      telefone: indicacao.telefone,
+      nomeValido,
+      telefoneValido,
+      nomePassouValidacao,
+      telefonePassouValidacao,
+      completo
+    });
+    
+    return completo;
   }, [validarCampo]);
 
   // Função para avançar para o próximo lead
@@ -158,7 +173,6 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
       const leadsParaSalvar: CreateLeadDTO[] = indicacoes.map(indicacao => ({
         nome: indicacao.nome.trim(),
         telefone: indicacao.telefone.replace(/\D/g, ''),
-        email: '', // Campo não usado no formulário atual
       }));
 
       await api.salvarLeads(idIndicador, leadsParaSalvar);
@@ -182,6 +196,11 @@ export function CadastroLeads({ idIndicador, onConcluido }: CadastroLeadsProps) 
   const isLoading = status === 'submitting' || status === 'validating';
   const isSuccess = status === 'success';
   const hasErrors = Object.keys(erros).length > 0;
+
+  // Debug temporário
+  useEffect(() => {
+    console.log('Estado leads completos:', leadsCompletos, 'Todos completos:', leadsCompletos.every(Boolean));
+  }, [leadsCompletos]);
 
   // Navegação com teclado
   useEffect(() => {
