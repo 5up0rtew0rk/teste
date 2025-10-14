@@ -1,6 +1,16 @@
 import type { Indicador, Lead, CreateIndicadorDTO, CreateLeadDTO } from '../types/database';
 
-const API_URL = 'http://localhost:3001/api';
+// Detecta automaticamente o host para funcionar em qualquer rede
+const getApiUrl = () => {
+  const hostname = window.location.hostname;
+  // Se estiver acessando por IP, usa o mesmo IP para o backend
+  // Senão, usa localhost
+  return hostname === 'localhost' || hostname === '127.0.0.1' 
+    ? 'http://localhost:3001/api'
+    : `http://${hostname}:3001/api`;
+};
+
+const API_URL = getApiUrl();
 
 // Função auxiliar para fazer requisições
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {

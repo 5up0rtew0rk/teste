@@ -106,13 +106,32 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ nomeIndicador, onPrem
     sortearPremio();
   }, [sortearPremio, resetarRoleta]);
 
-  // NOVA LÓGICA: Calcula a rotação final de forma SIMPLES e DIRETA
+  // Calcula qual prêmio está apontado pela seta após a rotação
+  const calcularPremioApontado = useCallback((anguloRotacao: number) => {
+    // Normaliza o ângulo para 0-360
+    const anguloNormalizado = ((anguloRotacao % 360) + 360) % 360;
+    
+    // A seta aponta para o TOPO (270° no sistema de coordenadas da roleta rotacionada)
+    // Precisamos descobrir qual segmento está nessa posição
+    // Como a roleta gira no sentido horário (positivo), invertemos o cálculo
+    const anguloSeta = 270; // Topo no sistema de coordenadas padrão
+    const anguloRelativo = (anguloSeta - anguloNormalizado + 360) % 360;
+    
+    // Cada segmento no SVG começa em: index * 60° (sem o offset de -90°)
+    // Mas como desenhamos com -90°, o segmento 0 está em -90° (270° normalizado)
+    const anguloComOffset = (anguloRelativo + 90) % 360;
+    const indexApontado = Math.floor(anguloComOffset / grausPorSegmento) % PREMIOS.length;
+    
+    return indexApontado;
+  }, [grausPorSegmento]);
+
   const pararRoleta = useCallback(() => {
     if (!premioSorteado || parando) return;
     
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🛑 PARANDO ROLETA');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🎲 Prêmio sorteado:', premioSorteado.premio.descricao, '(Index:', premioSorteado.index + ')');
     
     setParando(true);
     
@@ -120,62 +139,40 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ nomeIndicador, onPrem
       cancelAnimationFrame(animationFrameRef.current);
     }
     
-    // EXPLICAÇÃO DA LÓGICA:
-    // 1. O ponteiro está fixo em 0° (topo da tela)
-    // 2. A roleta gira no sentido HORÁRIO (positivo)
-    // 3. Os segmentos são desenhados com índices de 0 a 5
-    // 4. Segmento 0 começa em -90° (topo) e vai até -30°
-    // 5. Para o segmento N ficar no ponteiro, precisamos girar a roleta
-    //    de forma que o CENTRO do segmento fique em 0°
+    // NOVA ABORDAGEM: Calcular a rotação necessária de forma invertida
+    // A seta está fixa no topo (270° no sistema padrão)
+    // Queremos que o segmento do prêmio sorteado fique embaixo da seta
     
-    // Ângulo do CENTRO de cada segmento no SVG (SEM rotação da roleta)
-    // Segmento 0: -90° + 30° = -60° (centro)
-    // Segmento 1: -30° + 30° = 0° (centro)
-    // Segmento 2: 30° + 30° = 60° (centro)
-    // etc...
-    const startAngleSegmento = premioSorteado.index * grausPorSegmento;
-    const centroSegmento = startAngleSegmento + grausPorSegmento / 2;
+    // Centro do segmento sorteado no SVG (sem rotação)
+    // Segmentos começam em -90° + (index * 60°)
+    const startAngleSVG = premioSorteado.index * grausPorSegmento - 90;
+    const centroSegmentoSVG = startAngleSVG + grausPorSegmento / 2;
+    
+    // Variação dentro do segmento
     const variacaoAngulo = (premioSorteado.variacao || 0) * grausPorSegmento;
-    const posicaoFinalSegmento = centroSegmento + variacaoAngulo;
-
+    const anguloAlvoSegmento = centroSegmentoSVG + variacaoAngulo;
     
-    console.log('📍 POSIÇÃO DO SEGMENTO (sem rotação):');
-    console.log('   Prêmio:', premioSorteado.premio.descricao);
-    console.log('   Index:', premioSorteado.index);
-    console.log('   Início do segmento:', startAngleSegmento + '°');
-    console.log('   Centro do segmento:', centroSegmento + '°');
-    console.log('   Variação:', variacaoAngulo.toFixed(2) + '°');
-    console.log('   Posição final alvo:', posicaoFinalSegmento.toFixed(2) + '°');
+    console.log('📍 Centro do segmento no SVG:', centroSegmentoSVG.toFixed(2) + '°');
+    console.log('📍 Ângulo alvo com variação:', anguloAlvoSegmento.toFixed(2) + '°');
     
-    // Para alinhar o segmento com o ponteiro (0°):
-    // rotacao_necessaria = -posicao_do_segmento
-    // Mas queremos valores positivos, então:
-    // rotacao_necessaria = 360 - posicao_do_segmento (se posicao > 0)
-    // rotacao_necessaria = -posicao_do_segmento (se posicao < 0)
+    // Para alinhar: queremos que anguloAlvoSegmento fique em -90° (270°)
+    // Rotação = 270° - anguloAlvoSegmento
+    let anguloBase = 270 - anguloAlvoSegmento;
     
-    let anguloParaAlinhar;
-    if (posicaoFinalSegmento >= 0) {
-      anguloParaAlinhar = 360 - posicaoFinalSegmento;
-    } else {
-      anguloParaAlinhar = -posicaoFinalSegmento;
-    }
+    // Normalizar para valores positivos
+    while (anguloBase < 0) anguloBase += 360;
     
-    // Adiciona voltas completas (entre 6 e 8) para o efeito dramático
+    // Adicionar voltas completas
     const voltasCompletas = 6 + Math.random() * 2;
-    const anguloVoltas = voltasCompletas * 360;
+    const rotacaoFinal = voltasCompletas * 360 + anguloBase;
     
-    // Rotação final = voltas + ajuste para alinhar
-    const rotacaoFinal = anguloVoltas + anguloParaAlinhar;
+    console.log('🎯 Ângulo base:', anguloBase.toFixed(2) + '°');
+    console.log('🎯 Voltas completas:', voltasCompletas.toFixed(1));
+    console.log('🎯 Rotação final:', rotacaoFinal.toFixed(2) + '°');
     
-    console.log('🎯 CÁLCULO DA ROTAÇÃO:');
-    console.log('   Ângulo para alinhar:', anguloParaAlinhar.toFixed(2) + '°');
-    console.log('   Voltas completas:', voltasCompletas.toFixed(1));
-    console.log('   Rotação final:', rotacaoFinal.toFixed(2) + '°');
-    
-    // Verificação: após rotacionar, onde o segmento estará?
-    const posicaoFinalVerificacao = (posicaoFinalSegmento + rotacaoFinal) % 360;
-    console.log('✅ VERIFICAÇÃO:');
-    console.log('   Posição final do segmento após rotação:', posicaoFinalVerificacao.toFixed(2) + '° (deve ser ~0°)');
+    // VERIFICAÇÃO
+    const indexVerificacao = calcularPremioApontado(rotacaoFinal);
+    console.log('✅ VERIFICAÇÃO: Prêmio apontado após rotação:', PREMIOS[indexVerificacao].descricao, '(Index:', indexVerificacao + ')');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
     setGirando(false);
@@ -188,15 +185,22 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ nomeIndicador, onPrem
       setTimeout(() => {
         setRotacao(rotacaoFinal);
         setParando(false);
+        
+        // Calcular qual prêmio realmente está apontado
+        const indexFinal = calcularPremioApontado(rotacaoFinal);
+        const premioFinal = PREMIOS[indexFinal];
+        
+        console.log('🏆 PRÊMIO FINAL REVELADO:', premioFinal.descricao);
+        
         setPremioDestacado(true);
         
         setTimeout(() => {
           setPremioDestacado(false);
-          onPremioRevelado(premioSorteado.premio);
+          onPremioRevelado(premioFinal);
         }, 2000);
       }, 12100);
     }
-  }, [premioSorteado, parando, grausPorSegmento, onPremioRevelado]);
+  }, [premioSorteado, parando, grausPorSegmento, onPremioRevelado, calcularPremioApontado]);
 
   const iniciarRoleta = useCallback(() => {
     if (ativo || !premioSorteado || parando) return;
@@ -393,19 +397,13 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ nomeIndicador, onPrem
                     const textX = 200 + 130 * Math.cos((midAngle * Math.PI) / 180);
                     const textY = 200 + 130 * Math.sin((midAngle * Math.PI) / 180);
 
-                    const isVencedor = premioDestacado && premioSorteado?.index === index;
-
                     return (
                       <g key={index}>
                         <path
                           d={`M 200 200 L ${x1} ${y1} A 190 190 0 0 1 ${x2} ${y2} Z`}
                           fill={premio.cor}
-                          stroke={isVencedor ? "#ffd700" : "white"}
-                          strokeWidth={isVencedor ? "8" : "3"}
-                          style={{
-                            filter: isVencedor ? 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.9))' : 'none',
-                            transition: 'all 0.5s ease'
-                          }}
+                          stroke="white"
+                          strokeWidth="3"
                         />
                         <text
                           x={textX}
@@ -443,11 +441,8 @@ export const RoletaDaSorte = memo(function RoletaDaSorte({ nomeIndicador, onPrem
           
           {premioDestacado && (
             <div className="animate-bounce">
-              <p className="text-yellow-300 text-2xl tablet:text-3xl lg:text-4xl font-bold drop-shadow-lg">
-                🎉 Você ganhou!
-              </p>
               <p className="text-white text-lg tablet:text-xl lg:text-2xl font-semibold mt-2">
-                Preparando seu prêmio...
+                Preparando...
               </p>
             </div>
           )}

@@ -29,6 +29,9 @@ export default defineConfig({
   },
   // Preload de recursos críticos
   server: {
+    host: '0.0.0.0', // Permite acesso externo
+    port: 5173,
+    strictPort: true,
     preTransformRequests: false
   },
   // CSS otimizations
