@@ -1,4 +1,4 @@
-import { Trophy, X, Sparkles, RotateCcw } from 'lucide-react';
+import { X, RotateCcw } from 'lucide-react';
 import type { Premio } from '../types/database';
 
 interface PopupPremiacaoProps {

@@ -29,7 +29,7 @@ interface RoletaDaSorteProps {
   onPremioRevelado: (premio: Premio) => void;
 }
 
-export const RoletaDaSorte = memo(function RoletaDaSorte({ idIndicador, nomeIndicador, onPremioRevelado }: RoletaDaSorteProps) {
+export const RoletaDaSorte = memo(function RoletaDaSorte({ nomeIndicador, onPremioRevelado }: RoletaDaSorteProps) {
   const [premioSorteado, setPremioSorteado] = useState<{ premio: Premio; index: number; variacao?: number } | null>(null);
   const [rotacao, setRotacao] = useState(0);
   const [velocidade, setVelocidade] = useState(0);

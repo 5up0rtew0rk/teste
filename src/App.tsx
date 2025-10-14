@@ -4,6 +4,7 @@ import { CadastroLeads } from './components/CadastroLeads';
 import { RoletaDaSorte } from './components/RoletaDaSorte';
 import { PopupPremiacao } from './components/PopupPremiacao';
 import type { Premio } from './types/database';
+import DevNavigation from './components/DevNavigation';
 
 type Etapa = 'cadastro-indicador' | 'cadastro-leads' | 'roleta';
 
@@ -89,6 +90,19 @@ function App() {
 
   return (
     <>
+      {/* Dev Navigation - visível em desenvolvimento e sob demanda */}
+      <DevNavigation
+        etapaAtual={etapa}
+        hasIndicador={!!indicador}
+        onChangeEtapa={handleDevChangeEtapa}
+        onCreateIndicadorTeste={handleSetIndicadorTeste}
+        onReset={() => {
+          setMostrarPopup(false);
+          setPremioRevelado(null);
+          setIndicador(null);
+          setEtapa('cadastro-indicador');
+        }}
+      />
 
       {etapa === 'cadastro-indicador' && (
         <CadastroIndicador onCadastroCompleto={handleCadastroIndicador} />
