@@ -1,4 +1,3 @@
-// Função serverless simples para Vercel
 export default async function handler(req, res) {
   // Configurar CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,19 +10,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { url: requestUrl, method } = req;
-  console.log(`[API] ${method} ${requestUrl}`); // Debug log
-
   try {
-    // Rota de teste básica
     return res.json({ 
-      message: 'API funcionando!', 
-      method,
-      url: requestUrl,
-      timestamp: new Date().toISOString() 
+      status: 'OK',
+      message: 'API está funcionando corretamente',
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.url
     });
   } catch (error) {
-    console.error('Erro na API:', error);
+    console.error('Erro na API test:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
