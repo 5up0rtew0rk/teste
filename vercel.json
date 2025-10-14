@@ -1,13 +1,7 @@
 {
   "functions": {
-    "server/server.js": {
-      "runtime": "@vercel/node"
+    "api/index.js": {
+      "maxDuration": 10
     }
-  },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/server/server.js"
-    }
-  ]
+  }
 }
