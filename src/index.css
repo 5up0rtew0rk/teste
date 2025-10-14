@@ -5,5 +5,134 @@
 @layer base {
 	body {
 		@apply font-sans;
+		/* Previne zoom em dispositivos iOS ao tocar duas vezes */
+		touch-action: manipulation;
+		/* Previne scroll horizontal e barra branca aparecendo */
+		overflow-x: hidden;
+	}
+	
+	html, body {
+		/* Garante que não apareça espaço branco */
+		min-height: 100vh;
+		overflow-x: hidden;
+	}
+}
+
+@layer utilities {
+	/* Classe para prevenir scroll durante interações específicas */
+	.prevent-scroll {
+		overflow: hidden;
+		touch-action: none;
+		-webkit-overflow-scrolling: touch;
+	}
+	
+	/* Animação de tensão e suspense - movimento lento com desaceleração progressiva */
+	.animate-tension {
+		animation: tension 4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+	}
+	
+	/* Animação de balanço pesado - como um pêndulo desacelerando */
+	.animate-heavy-swing {
+		animation: heavySwing 6s cubic-bezier(0.16, 0.84, 0.44, 1) infinite;
+	}
+	
+	/* Animação de suspense com pausa - parece que vai parar mas continua */
+	.animate-suspense {
+		animation: suspense 8s cubic-bezier(0.19, 1, 0.22, 1) infinite;
+	}
+	
+	/* Animação de peso gradual - movimento com resistência crescente */
+	.animate-weighted {
+		animation: weighted 5s cubic-bezier(0.33, 0.85, 0.4, 0.96) infinite;
+	}
+}
+
+/* Keyframes para tensão - movimento vertical com desaceleração */
+@keyframes tension {
+	0%, 100% {
+		transform: translateY(0) scale(1);
+	}
+	25% {
+		transform: translateY(-8px) scale(1.02);
+	}
+	50% {
+		transform: translateY(-3px) scale(1.01);
+	}
+	75% {
+		transform: translateY(-1px) scale(1.005);
+	}
+}
+
+/* Keyframes para balanço pesado - rotação lenta com peso */
+@keyframes heavySwing {
+	0%, 100% {
+		transform: rotate(0deg) translateY(0);
+	}
+	15% {
+		transform: rotate(-3deg) translateY(-4px);
+	}
+	30% {
+		transform: rotate(2deg) translateY(-2px);
+	}
+	45% {
+		transform: rotate(-1deg) translateY(-1px);
+	}
+	60% {
+		transform: rotate(0.5deg) translateY(-0.5px);
+	}
+	75% {
+		transform: rotate(-0.2deg) translateY(-0.2px);
+	}
+}
+
+/* Keyframes para suspense - escala e opacidade com pausas dramáticas */
+@keyframes suspense {
+	0%, 100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	20% {
+		transform: scale(1.05);
+		opacity: 0.95;
+	}
+	40% {
+		transform: scale(1.02);
+		opacity: 0.98;
+	}
+	60% {
+		transform: scale(1.01);
+		opacity: 0.99;
+	}
+	80% {
+		transform: scale(1.005);
+		opacity: 0.995;
+	}
+}
+
+/* Keyframes para movimento com peso - desaceleração progressiva */
+@keyframes weighted {
+	0%, 100% {
+		transform: translateY(0);
+		filter: brightness(1);
+	}
+	10% {
+		transform: translateY(-10px);
+		filter: brightness(1.1);
+	}
+	30% {
+		transform: translateY(-6px);
+		filter: brightness(1.06);
+	}
+	50% {
+		transform: translateY(-3px);
+		filter: brightness(1.03);
+	}
+	70% {
+		transform: translateY(-1.5px);
+		filter: brightness(1.015);
+	}
+	90% {
+		transform: translateY(-0.5px);
+		filter: brightness(1.005);
 	}
 }

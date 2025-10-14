@@ -284,6 +284,5 @@ app.get('/api/download/:tipo', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Backend rodando em http://localhost:${PORT}`);
-  console.log(`🌐 Frontend disponível em http://localhost:5173`);
   console.log(`📁 Dados salvos em: ${DATA_DIR}`);
 });
