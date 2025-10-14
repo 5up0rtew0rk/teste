@@ -1,6 +1,11 @@
 import type { Indicador, Lead, CreateIndicadorDTO, CreateLeadDTO } from '../types/database';
 
-const API_URL = 'http://localhost:3001/api';
+// Detecta automaticamente se está em produção ou desenvolvimento
+const API_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD 
+    ? '/api' // Em produção (Vercel), usa paths relativos
+    : 'http://localhost:3001/api' // Em desenvolvimento, usa o servidor local
+);
 
 // Função auxiliar para fazer requisições
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
