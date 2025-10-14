@@ -68,6 +68,19 @@ function generateId() {
   return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 }
 
+// Função auxiliar para ler o body da requisição
+function getBody(req) {
+  return new Promise((resolve) => {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      resolve(body);
+    });
+  });
+}
+
 // Handler principal para Vercel
 export default async function handler(req, res) {
   // Configurar CORS
@@ -86,11 +99,19 @@ export default async function handler(req, res) {
 
   const { url: requestUrl, method } = req;
   const url = new URL(requestUrl, `http://${req.headers.host}`);
-  const pathname = url.pathname;
+  let pathname = url.pathname;
+  
+  // Na Vercel, a função serverless recebe a URL sem o /api prefix
+  // Normalizar o path para sempre incluir /api
+  if (!pathname.startsWith('/api')) {
+    pathname = '/api' + pathname;
+  }
+
+  console.log(`[API] ${method} ${pathname}`); // Debug log
 
   try {
     // Rota de teste
-    if (pathname === '/api/test' && method === 'GET') {
+    if ((pathname === '/api/test' || pathname === '/api/' || pathname === '/api') && method === 'GET') {
       return res.json({ message: 'API funcionando!', timestamp: new Date().toISOString() });
     }
 
@@ -174,45 +195,98 @@ export default async function handler(req, res) {
 
     if (pathname === '/api/leads' && method === 'POST') {
       const body = req.body || JSON.parse(await getBody(req));
-      const { codigoIndicacao, nome, cpf, telefone, email, valor } = body;
       
-      if (!codigoIndicacao || !nome || !cpf || !telefone || !email || !valor) {
-        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+      // Verifica se é um array de leads (formato em lote) ou um lead individual
+      if (body.id_indicador && body.leads && Array.isArray(body.leads)) {
+        // Formato em lote: { id_indicador, leads: [...] }
+        const { id_indicador, leads: leadsData } = body;
+        
+        const indicadores = await readCSV(FILES.INDICADORES);
+        const indicador = indicadores.find(i => i.id === id_indicador);
+        
+        if (!indicador) {
+          return res.status(404).json({ error: 'Indicador não encontrado' });
+        }
+        
+        const leads = await readCSV(FILES.LEADS);
+        const novosLeads = [];
+        
+        for (const leadData of leadsData) {
+          const { nome, cpf, telefone, email, valor } = leadData;
+          
+          if (!nome || !cpf || !telefone || !email || !valor) {
+            return res.status(400).json({ error: 'Todos os campos são obrigatórios para cada lead' });
+          }
+          
+          // Verifica se já existe lead com o mesmo CPF
+          const leadExistente = leads.find(l => l.cpf === cpf);
+          if (leadExistente) {
+            return res.status(409).json({ error: `Já existe um lead cadastrado com o CPF ${cpf}` });
+          }
+          
+          const novoLead = {
+            id: generateId(),
+            idIndicador: id_indicador,
+            codigoIndicacao: indicador.codigoIndicacao,
+            nome,
+            cpf,
+            telefone,
+            email,
+            valor: parseFloat(valor).toFixed(2),
+            dataGeracao: new Date().toISOString().split('T')[0],
+            status: 'PENDENTE'
+          };
+          
+          leads.push(novoLead);
+          novosLeads.push(novoLead);
+        }
+        
+        const headers = ['id', 'idIndicador', 'codigoIndicacao', 'nome', 'cpf', 'telefone', 'email', 'valor', 'dataGeracao', 'status'];
+        await writeCSV(FILES.LEADS, leads, headers);
+        
+        return res.status(201).json(novosLeads);
+      } else {
+        // Formato individual: { codigoIndicacao, nome, cpf, telefone, email, valor }
+        const { codigoIndicacao, nome, cpf, telefone, email, valor } = body;
+        
+        if (!codigoIndicacao || !nome || !cpf || !telefone || !email || !valor) {
+          return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+        }
+        
+        const indicadores = await readCSV(FILES.INDICADORES);
+        const indicador = indicadores.find(i => i.codigoIndicacao === codigoIndicacao);
+        
+        if (!indicador) {
+          return res.status(404).json({ error: 'Código de indicação inválido' });
+        }
+        
+        const leads = await readCSV(FILES.LEADS);
+        
+        const leadExistente = leads.find(l => l.cpf === cpf);
+        if (leadExistente) {
+          return res.status(409).json({ error: 'Já existe um lead cadastrado com este CPF' });
+        }
+        
+        const novoLead = {
+          id: generateId(),
+          idIndicador: indicador.id,
+          codigoIndicacao,
+          nome,
+          cpf,
+          telefone,
+          email,
+          valor: parseFloat(valor).toFixed(2),
+          dataGeracao: new Date().toISOString().split('T')[0],
+          status: 'PENDENTE'
+        };
+        
+        leads.push(novoLead);
+        
+        const headers = ['id', 'idIndicador', 'codigoIndicacao', 'nome', 'cpf', 'telefone', 'email', 'valor', 'dataGeracao', 'status'];
+        await writeCSV(FILES.LEADS, leads, headers);
+        
+        return res.status(201).json(novoLead);
       }
-      
-      const indicadores = await readCSV(FILES.INDICADORES);
-      const indicador = indicadores.find(i => i.codigoIndicacao === codigoIndicacao);
-      
-      if (!indicador) {
-        return res.status(404).json({ error: 'Código de indicação inválido' });
-      }
-      
-      const leads = await readCSV(FILES.LEADS);
-      
-      const leadExistente = leads.find(l => l.cpf === cpf);
-      if (leadExistente) {
-        return res.status(409).json({ error: 'Já existe um lead cadastrado com este CPF' });
-      }
-      
-      const novoLead = {
-        id: generateId(),
-        idIndicador: indicador.id,
-        codigoIndicacao,
-        nome,
-        cpf,
-        telefone,
-        email,
-        valor: parseFloat(valor).toFixed(2),
-        dataGeracao: new Date().toISOString().split('T')[0],
-        status: 'PENDENTE'
-      };
-      
-      leads.push(novoLead);
-      
-      const headers = ['id', 'idIndicador', 'codigoIndicacao', 'nome', 'cpf', 'telefone', 'email', 'valor', 'dataGeracao', 'status'];
-      await writeCSV(FILES.LEADS, leads, headers);
-      
-      return res.status(201).json(novoLead);
     }
 
     if (pathname.match(/^\/api\/leads\/[^/]+\/status$/) && method === 'PUT') {
@@ -260,24 +334,55 @@ export default async function handler(req, res) {
       return res.json(stats);
     }
 
+    // ===== ROTAS DE EXPORTAÇÃO =====
+
+    if (pathname === '/api/exportar' && method === 'GET') {
+      const indicadores = await readCSV(FILES.INDICADORES);
+      const leads = await readCSV(FILES.LEADS);
+      
+      const response = {
+        indicadores,
+        leads,
+        total: {
+          indicadores: indicadores.length,
+          leads: leads.length
+        }
+      };
+      
+      return res.json(response);
+    }
+
+    if (pathname.match(/^\/api\/download\/(indicadores|leads)$/) && method === 'GET') {
+      const tipo = pathname.split('/')[3];
+      const data = await readCSV(tipo === 'indicadores' ? FILES.INDICADORES : FILES.LEADS);
+      
+      // Converter para CSV
+      let csvContent = '';
+      if (data.length > 0) {
+        const headers = Object.keys(data[0]);
+        csvContent = headers.join(',') + '\n';
+        csvContent += data.map(row => 
+          headers.map(header => `"${(row[header] || '').toString().replace(/"/g, '""')}"`).join(',')
+        ).join('\n');
+      }
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${tipo}.csv"`);
+      return res.send(csvContent);
+    }
+
+    // ===== HEALTH CHECK =====
+
+    if (pathname === '/api/health' && method === 'GET') {
+      return res.json({ status: 'OK', message: 'API está funcionando corretamente' });
+    }
+
     // Rota não encontrada
-    return res.status(404).json({ error: 'Rota não encontrada' });
+    console.log(`[API] Rota não encontrada: ${method} ${pathname}`);
+    return res.status(404).json({ error: `Rota não encontrada: ${method} ${pathname}` });
 
   } catch (error) {
     console.error('Erro na API:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
-}
-
-// Função auxiliar para ler o body da requisição
-function getBody(req) {
-  return new Promise((resolve) => {
-    let body = '';
-    req.on('data', (chunk) => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      resolve(body);
-    });
-  });
 }
