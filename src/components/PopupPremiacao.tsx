@@ -1,4 +1,4 @@
-import { X, RotateCcw } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { Premio } from '../types/database';
 
 interface PopupPremiacaoProps {
@@ -8,7 +8,7 @@ interface PopupPremiacaoProps {
   onTentarNovamente?: () => void;
 }
 
-export function PopupPremiacao({ nomeIndicador, premio, onFechar, onTentarNovamente }: PopupPremiacaoProps) {
+export function PopupPremiacao({ nomeIndicador, premio, onFechar }: PopupPremiacaoProps) {
   // Define prêmios bons e ruins
   const premiosBons = ['Planner', 'Espelho', 'Copo'];
   const isPremioRuim = !premiosBons.includes(premio.descricao);
